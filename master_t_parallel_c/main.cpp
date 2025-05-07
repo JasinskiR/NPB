@@ -18,18 +18,27 @@ int main(int argc, char** argv) {
         problem_class = env_class[0];
     }
     
+    // Get thread count from environment or auto-detect
+    int num_threads = npb::utils::get_num_threads();
+    
     // Parse command line arguments if provided
-    if (argc > 1) {
-        // Allow command line override of environment variable
-        problem_class = argv[1][0];
+    for (int i = 1; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            // Process options
+            if (argv[i][1] == 't' && i + 1 < argc) {
+                num_threads = std::atoi(argv[i+1]);
+                i++; // Skip the next argument as it's the thread count value
+            }
+        } else {
+            // First non-option argument is the problem class
+            problem_class = argv[i][0];
+        }
     }
     
     // Setup problem parameters based on class
     npb::cg::Problem params;
     params.problem_class = problem_class;
-    
-    // Set thread count from environment or auto-detect
-    params.num_threads = npb::utils::get_num_threads();
+    params.num_threads = num_threads;
     
     switch (problem_class) {
         case 'S':
@@ -102,13 +111,15 @@ int main(int argc, char** argv) {
     npb::cg::SparseMatrix matrix(params);
     
     timer.stop(npb::utils::TimerManager::T_INIT);
-    std::cout << " Initialization time = " << std::setw(15) << std::fixed << std::setprecision(3) 
-              << timer.read(npb::utils::TimerManager::T_INIT) << " seconds\n";
+std::cout << " Initialization time = " << std::setw(15) << std::fixed << std::setprecision(3) 
+          << timer.read(npb::utils::TimerManager::T_INIT) << " seconds ("
+          << timer.read_ns(npb::utils::TimerManager::T_INIT) << " ns)\n";
     
     // Run the benchmark
     timer.start(npb::utils::TimerManager::T_BENCH);
-    double execution_time = matrix.run_benchmark();
+    double execution_time = matrix.run_benchmark(timer);
     timer.stop(npb::utils::TimerManager::T_BENCH);
+    int64_t execution_time_ns = timer.read_ns(npb::utils::TimerManager::T_BENCH);
     
     // Verify the results
     bool verified = matrix.verify();
@@ -146,31 +157,43 @@ int main(int argc, char** argv) {
         0,
         params.max_iter,
         execution_time,
+        execution_time_ns,
         mflops,
         "floating point",
-        verified
+        verified,
+        params.num_threads
     );
     
     // Print timer information
     if (timer.is_enabled()) {
         double tmax = timer.read(npb::utils::TimerManager::T_BENCH);
+        int64_t tmax_ns = timer.read_ns(npb::utils::TimerManager::T_BENCH);
         if (tmax == 0.0) tmax = 1.0;
+        if (tmax_ns == 0) tmax_ns = 1;
         
-        std::cout << "  SECTION   Time (secs)\n";
+        std::cout << "  SECTION   Time (secs)       Time (ns)\n";
         
         double t = timer.read(npb::utils::TimerManager::T_INIT);
-        std::cout << "  init:     " << std::setw(9) << std::fixed << std::setprecision(3) << t << "\n";
+        int64_t t_ns = timer.read_ns(npb::utils::TimerManager::T_INIT);
+        std::cout << "  init:     " << std::setw(9) << std::fixed << std::setprecision(3) << t 
+                  << "  " << std::setw(15) << t_ns << "\n";
         
         t = timer.read(npb::utils::TimerManager::T_BENCH);
+        t_ns = timer.read_ns(npb::utils::TimerManager::T_BENCH);
         std::cout << "  benchmark:" << std::setw(9) << std::fixed << std::setprecision(3) << t 
+                  << "  " << std::setw(15) << t_ns
                   << "  (" << std::setw(6) << std::fixed << std::setprecision(2) << t*100.0/tmax << "%)\n";
         
         t = timer.read(npb::utils::TimerManager::T_CONJ_GRAD);
+        t_ns = timer.read_ns(npb::utils::TimerManager::T_CONJ_GRAD);
         std::cout << "  conj_grad:" << std::setw(9) << std::fixed << std::setprecision(3) << t 
+                  << "  " << std::setw(15) << t_ns
                   << "  (" << std::setw(6) << std::fixed << std::setprecision(2) << t*100.0/tmax << "%)\n";
         
         t = tmax - t;
+        t_ns = tmax_ns - t_ns;
         std::cout << "  rest:     " << std::setw(9) << std::fixed << std::setprecision(3) << t 
+                  << "  " << std::setw(15) << t_ns
                   << "  (" << std::setw(6) << std::fixed << std::setprecision(2) << t*100.0/tmax << "%)\n";
     }
     

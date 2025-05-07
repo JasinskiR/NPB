@@ -37,7 +37,7 @@ SparseMatrix::SparseMatrix(const Problem& params)
     make_matrix();
 }
 
-double SparseMatrix::run_benchmark() {
+double SparseMatrix::run_benchmark(npb::utils::TimerManager& timer) {
     // Initialize vectors
     std::fill(x_.begin(), x_.end(), 1.0);
     std::fill(z_.begin(), z_.end(), 0.0);
@@ -56,10 +56,12 @@ double SparseMatrix::run_benchmark() {
     std::fill(r_.begin(), r_.end(), 0.0);
     zeta_ = 0.0;  // Reset class member instead of creating a new local variable
     
-    // Run main benchmark
-    npb::utils::TimerManager timer;
-    timer.enable();
+    // Run main benchmark - using the passed timer
     timer.start(npb::utils::TimerManager::T_BENCH);
+
+    #ifdef _OPENMP
+    omp_set_num_threads(params_.num_threads);
+    #endif
     
     for (int it = 1; it <= params_.max_iter; it++) {
         timer.start(npb::utils::TimerManager::T_CONJ_GRAD);

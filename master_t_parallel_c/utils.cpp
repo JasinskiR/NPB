@@ -8,20 +8,22 @@
 
 namespace npb::utils {
 
-void print_results(
-    const std::string& name,
-    char class_type,
-    int64_t n1,
-    int64_t n2,
-    int64_t n3,
-    int64_t niter,
-    double time,
-    double mops,
-    const std::string& optype,
-    bool verified,
-    bool with_timers,
-    const std::vector<double>& timers
-) {
+    void print_results(
+        const std::string& name,
+        char class_type,
+        int64_t n1,
+        int64_t n2,
+        int64_t n3,
+        int64_t niter,
+        double time,
+        int64_t time_ns,
+        double mops,
+        const std::string& optype,
+        bool verified,
+        int num_threads,
+        bool with_timers,
+        const std::vector<double>& timers
+    ) {
     std::cout << "\n\n " << name << " Benchmark Completed\n";
     std::cout << " Class          =                        " << class_type << "\n";
     
@@ -55,11 +57,12 @@ void print_results(
     }
     
     // Print number of threads
-    std::cout << " Num threads     =             " << std::setw(12) << std::thread::hardware_concurrency() << "\n";
+    std::cout << " Num threads     =             " << std::setw(12) << num_threads << "\n";
     
     // Print additional benchmark info
     std::cout << " Iterations      =             " << std::setw(12) << niter << "\n";
     std::cout << " Time in seconds =             " << std::setw(12) << std::fixed << std::setprecision(2) << time << "\n";
+    std::cout << " Time in ns      =             " << std::setw(12) << time_ns << "\n";
     std::cout << " Mop/s total     =             " << std::setw(12) << std::fixed << std::setprecision(2) << mops << "\n";
     std::cout << " Operation type  = " << std::setw(24) << optype << "\n";
     

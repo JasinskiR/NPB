@@ -84,6 +84,16 @@ foreach(CLASS_TYPE S W A B C D E)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Running CG benchmark with CLASS=${CLASS_TYPE}"
     )
+    
+    # Add thread count variants (1, 2, 4, 8, 16 threads)
+    foreach(THREAD_COUNT 1 2 4 8 16)
+        add_custom_target(run_${CLASS_TYPE}_t${THREAD_COUNT}
+            COMMAND $<TARGET_FILE:cg> ${CLASS_TYPE} -t ${THREAD_COUNT}
+            DEPENDS cg
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Running CG benchmark with CLASS=${CLASS_TYPE} and ${THREAD_COUNT} threads"
+        )
+    endforeach()
 endforeach()
 
 # Installation

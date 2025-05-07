@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.hpp" 
+
 #include <vector>
 #include <span>
 #include <cstdint>
@@ -37,7 +39,7 @@ public:
     explicit SparseMatrix(const Problem& params);
     
     // Run the benchmark
-    double run_benchmark();
+    double run_benchmark(npb::utils::TimerManager& timer);
     
     // Get verification value
     [[nodiscard]] double get_zeta() const noexcept { return zeta_; }

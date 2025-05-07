@@ -113,91 +113,107 @@ public:
 
 // High-resolution timer
 class Timer {
-public:
-    Timer() {
-        reset();
-    }
-
-    void start() {
-        if (!running_) {
-            start_time_ = std::chrono::high_resolution_clock::now();
-            running_ = true;
+    public:
+        Timer() {
+            reset();
         }
-    }
-
-    void stop() {
-        if (running_) {
-            auto end_time = std::chrono::high_resolution_clock::now();
-            elapsed_ += std::chrono::duration<double>(end_time - start_time_).count();
+    
+        void start() {
+            if (!running_) {
+                start_time_ = std::chrono::high_resolution_clock::now();
+                running_ = true;
+            }
+        }
+    
+        void stop() {
+            if (running_) {
+                auto end_time = std::chrono::high_resolution_clock::now();
+                elapsed_ns_ += std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time_).count();
+                running_ = false;
+            }
+        }
+    
+        void reset() {
+            elapsed_ns_ = 0;
             running_ = false;
         }
-    }
-
-    void reset() {
-        elapsed_ = 0.0;
-        running_ = false;
-    }
-
-    [[nodiscard]] double elapsed() const {
-        if (running_) {
-            auto current_time = std::chrono::high_resolution_clock::now();
-            return elapsed_ + std::chrono::duration<double>(current_time - start_time_).count();
+    
+        [[nodiscard]] double elapsed() const {
+            if (running_) {
+                auto current_time = std::chrono::high_resolution_clock::now();
+                return (elapsed_ns_ + std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        current_time - start_time_).count()) / 1e9;
+            }
+            return elapsed_ns_ / 1e9;
         }
-        return elapsed_;
-    }
-
-private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
-    double elapsed_{0.0};
-    bool running_{false};
-};
-
-class TimerManager {
-public:
-    enum TimerID {
-        T_INIT,
-        T_BENCH,
-        T_CONJ_GRAD,
-        T_LAST
+    
+        [[nodiscard]] int64_t elapsed_ns() const {
+            if (running_) {
+                auto current_time = std::chrono::high_resolution_clock::now();
+                return elapsed_ns_ + std::chrono::duration_cast<std::chrono::nanoseconds>(
+                        current_time - start_time_).count();
+            }
+            return elapsed_ns_;
+        }
+    
+    private:
+        std::chrono::time_point<std::chrono::high_resolution_clock> start_time_;
+        int64_t elapsed_ns_{0};
+        bool running_{false};
     };
-
-    void clear(TimerID id) {
-        if (id < T_LAST) {
-            timers_[id].reset();
-        }
-    }
-
-    void start(TimerID id) {
-        if (id < T_LAST) {
-            timers_[id].start();
-        }
-    }
-
-    void stop(TimerID id) {
-        if (id < T_LAST) {
-            timers_[id].stop();
-        }
-    }
-
-    [[nodiscard]] double read(TimerID id) const {
-        if (id < T_LAST) {
-            return timers_[id].elapsed();
-        }
-        return 0.0;
-    }
-
-    [[nodiscard]] bool is_enabled() const {
-        return enabled_;
-    }
-
-    void enable() {
-        enabled_ = true;
-    }
-
-private:
-    Timer timers_[T_LAST];
-    bool enabled_{false};
-};
+    class TimerManager {
+        public:
+            enum TimerID {
+                T_INIT,
+                T_BENCH,
+                T_CONJ_GRAD,
+                T_LAST
+            };
+        
+            void clear(TimerID id) {
+                if (id < T_LAST) {
+                    timers_[id].reset();
+                }
+            }
+        
+            void start(TimerID id) {
+                if (id < T_LAST) {
+                    timers_[id].start();
+                }
+            }
+        
+            void stop(TimerID id) {
+                if (id < T_LAST) {
+                    timers_[id].stop();
+                }
+            }
+        
+            [[nodiscard]] double read(TimerID id) const {
+                if (id < T_LAST) {
+                    return timers_[id].elapsed();
+                }
+                return 0.0;
+            }
+        
+            [[nodiscard]] int64_t read_ns(TimerID id) const {
+                if (id < T_LAST) {
+                    return timers_[id].elapsed_ns();
+                }
+                return 0;
+            }
+        
+            [[nodiscard]] bool is_enabled() const {
+                return enabled_;
+            }
+        
+            void enable() {
+                enabled_ = true;
+            }
+        
+        private:
+            Timer timers_[T_LAST];
+            bool enabled_{false};
+        };
 
 // Function to print benchmark results
 void print_results(
@@ -208,9 +224,11 @@ void print_results(
     int64_t n3,
     int64_t niter,
     double time,
+    int64_t time_ns,
     double mops,
     const std::string& optype,
     bool verified,
+    int num_threads = std::thread::hardware_concurrency(),
     bool with_timers = false,
     const std::vector<double>& timers = {}
 );
