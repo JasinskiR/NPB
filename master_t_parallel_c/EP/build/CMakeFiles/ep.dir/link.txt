@@ -1,0 +1,1 @@
+/usr/bin/c++  -Xpreprocessor -fopenmp -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/ep.dir/main.cpp.o CMakeFiles/ep.dir/utils.cpp.o CMakeFiles/ep.dir/ep.cpp.o -o bin/ep   -L/opt/homebrew/opt/libomp/lib  -Wl,-rpath,/opt/homebrew/opt/libomp/lib /opt/homebrew/opt/libomp/lib/libomp.dylib
