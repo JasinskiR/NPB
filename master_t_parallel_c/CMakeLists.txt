@@ -6,8 +6,44 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Find OpenMP package
-find_package(OpenMP)
+# Special handling for macOS and OpenMP
+if(APPLE)
+    # Try to find Homebrew OpenMP installation
+    execute_process(
+        COMMAND brew --prefix libomp
+        OUTPUT_VARIABLE OPENMP_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    
+    if(NOT OPENMP_ROOT)
+        # Try standard locations
+        set(OPENMP_ROOT "/opt/homebrew/opt/libomp")
+        if(NOT EXISTS ${OPENMP_ROOT})
+            set(OPENMP_ROOT "/usr/local/opt/libomp")
+        endif()
+    endif()
+    
+    if(EXISTS ${OPENMP_ROOT})
+        message(STATUS "Found Homebrew OpenMP at: ${OPENMP_ROOT}")
+        
+        # Set variables manually for macOS
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+        set(OpenMP_omp_LIBRARY "${OPENMP_ROOT}/lib/libomp.dylib")
+        set(OpenMP_CXX_INCLUDE_DIRS "${OPENMP_ROOT}/include")
+        
+        # Apply these settings globally
+        include_directories(SYSTEM ${OpenMP_CXX_INCLUDE_DIRS})
+        link_directories(${OPENMP_ROOT}/lib)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        set(OpenMP_CXX_FOUND TRUE)
+    else()
+        message(FATAL_ERROR "OpenMP not found. Install with: brew install libomp")
+    endif()
+else()
+    # Standard OpenMP for non-macOS
+    find_package(OpenMP REQUIRED)
+endif()
 
 # Define the executable
 add_executable(cg
@@ -17,19 +53,21 @@ add_executable(cg
 )
 
 # Include directories
-target_include_directories(cg PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(cg PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OpenMP_CXX_INCLUDE_DIRS}
+)
 
 # Compiler flags
 target_compile_options(cg PRIVATE 
     -O3 
     -march=native
-    $<$<CXX_COMPILER_ID:GNU>:-fopenmp>
-    $<$<CXX_COMPILER_ID:Clang>:-fopenmp>
-    $<$<CXX_COMPILER_ID:MSVC>:/openmp>
 )
 
-# Link with OpenMP if found
-if(OpenMP_CXX_FOUND)
+# Link with OpenMP
+if(APPLE)
+    target_link_libraries(cg PRIVATE ${OpenMP_omp_LIBRARY})
+else()
     target_link_libraries(cg PRIVATE OpenMP::OpenMP_CXX)
 endif()
 

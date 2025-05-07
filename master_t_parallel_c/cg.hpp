@@ -15,6 +15,9 @@
 #include <algorithm>
 #include <numeric>
 #include <functional>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace npb::cg {
 
@@ -25,6 +28,7 @@ struct Problem {
     double rcond;        // conditioning parameter
     int64_t max_iter;    // maximum iterations
     char problem_class;  // problem class S, W, A, B, C, D, E, or U
+    int num_threads;     // number of threads to use
 };
 
 class SparseMatrix {

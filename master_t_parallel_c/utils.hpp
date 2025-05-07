@@ -12,9 +12,35 @@
 #include <thread>
 #include <future>
 #include <algorithm>
+#include <cstdlib>
 
 namespace npb {
 namespace utils {
+
+// Get number of threads from environment or use hardware concurrency
+inline int get_num_threads() {
+    int num_threads = 0;
+    
+    // Check for NPB_NUM_THREADS environment variable
+    if (const char* env_threads = std::getenv("NPB_NUM_THREADS")) {
+        num_threads = std::atoi(env_threads);
+    }
+    
+    // If not set or invalid, check for OMP_NUM_THREADS
+    if (num_threads <= 0) {
+        if (const char* env_threads = std::getenv("OMP_NUM_THREADS")) {
+            num_threads = std::atoi(env_threads);
+        }
+    }
+    
+    // If still not set or invalid, use hardware concurrency
+    if (num_threads <= 0) {
+        num_threads = std::thread::hardware_concurrency();
+    }
+    
+    // Fallback to 1 if all else fails
+    return num_threads > 0 ? num_threads : 1;
+}
 
 // Random number generator with same properties as original NPB
 class RandomGenerator {
@@ -192,7 +218,7 @@ void print_results(
 // Templated utility functions for parallel operations
 template <std::floating_point T, typename Func>
 T parallel_sum(std::span<const T> data, Func transform) {
-    const size_t hardware_threads = std::thread::hardware_concurrency();
+    const size_t hardware_threads = get_num_threads();
     const size_t num_threads = std::min(hardware_threads, data.size() / 1000 + 1);
     
     if (num_threads <= 1) {
@@ -232,7 +258,7 @@ T parallel_sum(std::span<const T> data) {
 
 template <std::floating_point T, typename Func>
 void parallel_for(size_t start, size_t end, Func func) {
-    const size_t hardware_threads = std::thread::hardware_concurrency();
+    const size_t hardware_threads = get_num_threads();
     const size_t num_elements = end - start;
     const size_t num_threads = std::min(hardware_threads, num_elements / 1000 + 1);
     

@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
     npb::cg::Problem params;
     params.problem_class = problem_class;
     
+    // Set thread count from environment or auto-detect
+    params.num_threads = npb::utils::get_num_threads();
+    
     switch (problem_class) {
         case 'S':
             params.na = 1400;
@@ -88,6 +91,7 @@ int main(int argc, char** argv) {
     std::cout << "\n\n NAS Parallel Benchmarks C++23 version - CG Benchmark\n\n";
     std::cout << " Size: " << std::setw(11) << params.na << "\n";
     std::cout << " Iterations: " << std::setw(5) << params.max_iter << "\n";
+    std::cout << " Threads: " << std::setw(10) << params.num_threads << "\n";
     
     // Enable timer for initialization
     npb::utils::TimerManager timer;
@@ -102,7 +106,9 @@ int main(int argc, char** argv) {
               << timer.read(npb::utils::TimerManager::T_INIT) << " seconds\n";
     
     // Run the benchmark
+    timer.start(npb::utils::TimerManager::T_BENCH);
     double execution_time = matrix.run_benchmark();
+    timer.stop(npb::utils::TimerManager::T_BENCH);
     
     // Verify the results
     bool verified = matrix.verify();
