@@ -53,31 +53,31 @@ public:
     static constexpr double t46 = t23 * t23;
 
     // Generate a random number using the linear congruential generator
-    static double randlc(double* x, double a) {
-        double t1, t2, t3, t4, a1, a2, x1, x2, z;
+static double randlc(double* x, double a) {
+    double t1, t2, t3, t4, a1, a2, x1, x2, z;
 
-        // Break A into two parts such that A = 2^23 * A1 + A2
-        t1 = r23 * a;
-        a1 = static_cast<int>(t1);
-        a2 = a - t23 * a1;
+    // Break A into two parts such that A = 2^23 * A1 + A2
+    t1 = r23 * a;
+    a1 = static_cast<int>(t1);
+    a2 = a - t23 * a1;
 
-        // Break X into two parts such that X = 2^23 * X1 + X2
-        t1 = r23 * (*x);
-        x1 = static_cast<int>(t1);
-        x2 = (*x) - t23 * x1;
-        
-        // Compute Z = A1 * X2 + A2 * X1 (mod 2^23)
-        t1 = a1 * x2 + a2 * x1;
-        t2 = static_cast<int>(r23 * t1);
-        z = t1 - t23 * t2;
-        
-        // Compute X = 2^23 * Z + A2 * X2 (mod 2^46)
-        t3 = t23 * z + a2 * x2;
-        t4 = static_cast<int>(r46 * t3);
-        (*x) = t3 - t46 * t4;
+    // Break X into two parts such that X = 2^23 * X1 + X2
+    t1 = r23 * (*x);
+    x1 = static_cast<int>(t1);
+    x2 = (*x) - t23 * x1;
+    
+    // Compute Z = A1 * X2 + A2 * X1 (mod 2^23)
+    t1 = a1 * x2 + a2 * x1;
+    t2 = static_cast<int>(r23 * t1);
+    z = t1 - t23 * t2;
+    
+    // Compute X = 2^23 * Z + A2 * X2 (mod 2^46)
+    t3 = t23 * z + a2 * x2;
+    t4 = static_cast<int>(r46 * t3);
+    (*x) = t3 - t46 * t4;
 
-        return (r46 * (*x));
-    }
+    return (r46 * (*x));
+}
 
     // Generate N random numbers
     static void vranlc(int n, double* x_seed, double a, std::span<double> y) {

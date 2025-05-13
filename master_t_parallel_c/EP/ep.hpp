@@ -67,6 +67,7 @@ private:
     // Data structures
     std::vector<double> x; // Random number array
     std::vector<double> q; // Results array
+    std::vector<int> key_array = {0, 0}; // Add this line for verification
     
     // Workload distribution
     int num_threads;

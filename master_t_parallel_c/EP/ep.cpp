@@ -132,60 +132,86 @@ void EPBenchmark::init() {
     std::cout << " Initialization complete\n";
 }
 
+double find_my_seed(int kn, int np, long nn, double s, double a) {
+    // Create a random number sequence of total length nn residing
+    // on np number of processors. Each processor will therefore have a
+    // subsequence of length nn/np. This routine returns that random
+    // number which is the first random number for the subsequence belonging
+    // to processor rank kn, and which is used as seed for proc kn ran # gen.
+    double t1, t2;
+    long mq, nq, kk, ik;
+
+    if (kn == 0) return s;
+
+    mq = (nn/4 + np - 1) / np;
+    nq = mq * 4 * kn; // number of random numbers to skip
+
+    t1 = s;
+    t2 = a;
+    kk = nq;
+    
+    while (kk > 1) {
+        ik = kk / 2;
+        if (2 * ik == kk) {
+            npb::utils::randlc(&t2, t2);
+            kk = ik;
+        } else {
+            npb::utils::randlc(&t1, t2);
+            kk = kk - 1;
+        }
+    }
+    npb::utils::randlc(&t1, t2);
+
+    return t1;
+}
+
 void EPBenchmark::worker_task(int tid, int num_workers) {
     // Local sums for thread safety
     double local_sx = 0.0;
     double local_sy = 0.0;
     std::vector<double> local_q(NQ, 0.0);
-    std::vector<double> local_x(2 * NK + 1);
     
-    // Divide work among threads (blocked distribution)
-    std::int64_t chunk = NN / num_workers;
-    std::int64_t start = tid * chunk;
-    std::int64_t end = (tid == num_workers - 1) ? NN : (tid + 1) * chunk;
+    // Use heap allocation instead of stack for the large array
+    std::vector<double> x_vec(2 * NK);
     
-    // Process each chunk
-    for (std::int64_t k = start; k < end; k++) {
-        double t1 = S;
-        double t2 = A;
+    // Calculate the starting and ending k for this thread
+    std::int64_t chunk_size = NN / num_workers;
+    std::int64_t start_k = tid * chunk_size;
+    std::int64_t end_k = (tid == num_workers - 1) ? NN : (tid + 1) * chunk_size;
+    
+    // Process each k value in the range
+    for (std::int64_t k = start_k; k < end_k; k++) {
+        // Compute the seed for this k value using the correct algorithm
+        double s1 = S;
+        double s2 = A;
         std::int64_t kk = k;
         
-        // Find starting seed t1 for this kk
-        for (int i = 1; i <= 100; i++) {
+        // Standard binary decomposition to find seed for k
+        while (kk > 0) {
             std::int64_t ik = kk / 2;
-            if ((2 * ik) != kk) {
-                double t3 = npb::utils::randlc(&t1, t2);
+            if (2 * ik != kk) {  // If kk is odd
+                npb::utils::randlc(&s1, s2);
             }
-            if (ik == 0) break;
-            double t3 = npb::utils::randlc(&t2, t2);
+            npb::utils::randlc(&s2, s2);
             kk = ik;
         }
         
-        // Compute uniform pseudorandom numbers
-        if (timers_enabled && tid == 0) {
-            npb::utils::timer_start(T_SORTING);
-        }
-        npb::utils::vranlc(2 * NK, &t1, A, local_x.data());
-        if (timers_enabled && tid == 0) {
-            npb::utils::timer_stop(T_SORTING);
-        }
+        // Generate random numbers for this k value
+        npb::utils::vranlc(2 * NK, &s1, A, x_vec.data());
         
-        // Compute Gaussian pairs
-        if (timers_enabled && tid == 0) {
-            npb::utils::timer_start(T_BENCHMARKING);
-        }
-        
+        // Compute Gaussian pairs using Box-Muller transform
         for (int i = 0; i < NK; i++) {
-            double x1 = 2.0 * local_x[2 * i] - 1.0;
-            double x2 = 2.0 * local_x[2 * i + 1] - 1.0;
+            double x1 = 2.0 * x_vec[2*i] - 1.0;
+            double x2 = 2.0 * x_vec[2*i+1] - 1.0;
             double t1 = x1 * x1 + x2 * x2;
             
             if (t1 <= 1.0) {
                 double t2 = std::sqrt(-2.0 * std::log(t1) / t1);
-                double t3 = x1 * t2;
-                double t4 = x2 * t2;
-                int l = std::max(std::fabs(t3), std::fabs(t4));
+                double t3 = x1 * t2;  // First Gaussian value
+                double t4 = x2 * t2;  // Second Gaussian value
                 
+                int l = std::max(std::abs(static_cast<int>(t3)), 
+                               std::abs(static_cast<int>(t4)));
                 if (l < NQ) {
                     local_q[l]++;
                     local_sx += t3;
@@ -193,13 +219,9 @@ void EPBenchmark::worker_task(int tid, int num_workers) {
                 }
             }
         }
-        
-        if (timers_enabled && tid == 0) {
-            npb::utils::timer_stop(T_BENCHMARKING);
-        }
     }
     
-    // Combine results using atomic operations
+    // Thread-safe accumulation of results
     static std::mutex mtx;
     {
         std::lock_guard<std::mutex> lock(mtx);
