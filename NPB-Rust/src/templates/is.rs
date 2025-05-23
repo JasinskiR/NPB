@@ -17,9 +17,8 @@ use common::print_results;
 use common::randdp;
 use std::time::Instant;
 use std::env;
-use chrono::Local;
 use rayon::prelude::*;
-use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::atomic::{AtomicI32, Ordering};
 
 #[cfg(not(any(feature = "class_c", feature = "class_d")))]
 type KeyType = i32;
@@ -27,7 +26,6 @@ type KeyType = i32;
 #[cfg(any(feature = "class_c", feature = "class_d"))]
 type KeyType = i64;
 
-#[derive(Clone)]
 struct ISBenchmark {
     key_array: Vec<KeyType>,
     key_buff1: Vec<KeyType>,
@@ -35,10 +33,11 @@ struct ISBenchmark {
     partial_verify_vals: Vec<KeyType>,
     bucket_size: Vec<Vec<KeyType>>,
     bucket_ptrs: Vec<KeyType>,
-    test_index_array: [KeyType; TEST_ARRAY_SIZE],
+    test_index_array: [usize; TEST_ARRAY_SIZE],
     test_rank_array: [KeyType; TEST_ARRAY_SIZE],
     passed_verification: i32,
     num_threads: usize,
+    key_buff_ptr_global: Vec<KeyType>,
 }
 
 impl ISBenchmark {
@@ -54,6 +53,7 @@ impl ISBenchmark {
             test_rank_array: [0; TEST_ARRAY_SIZE],
             passed_verification: 0,
             num_threads,
+            key_buff_ptr_global: vec![0; MAX_KEY],
         };
         
         benchmark.initialize_verification_arrays();
@@ -93,17 +93,17 @@ impl ISBenchmark {
     fn create_seq(&mut self) {
         let chunk_size = (TOTAL_KEYS + self.num_threads - 1) / self.num_threads;
         
-        let mut key_chunks: Vec<Vec<KeyType>> = (0..self.num_threads)
+        let key_chunks: Vec<(usize, Vec<KeyType>)> = (0..self.num_threads)
             .into_par_iter()
-            .map(|thread_id| {
+            .filter_map(|thread_id| {
                 let start_idx = thread_id * chunk_size;
                 let end_idx = (start_idx + chunk_size).min(TOTAL_KEYS);
-                let actual_size = end_idx - start_idx;
                 
-                if actual_size == 0 {
-                    return Vec::new();
+                if start_idx >= TOTAL_KEYS {
+                    return None;
                 }
                 
+                let actual_size = end_idx - start_idx;
                 let s = Self::find_my_seed(
                     thread_id as i32,
                     self.num_threads as i32,
@@ -125,16 +125,14 @@ impl ISBenchmark {
                     *key = (k * x) as KeyType;
                 }
                 
-                chunk
+                Some((start_idx, chunk))
             })
             .collect();
         
-        let mut idx = 0;
-        for chunk in key_chunks.drain(..) {
-            for key in chunk {
-                if idx < TOTAL_KEYS {
-                    self.key_array[idx] = key;
-                    idx += 1;
+        for (start_idx, chunk) in key_chunks {
+            for (i, key) in chunk.into_iter().enumerate() {
+                if start_idx + i < TOTAL_KEYS {
+                    self.key_array[start_idx + i] = key;
                 }
             }
         }
@@ -173,39 +171,31 @@ impl ISBenchmark {
         self.key_array[(iteration + MAX_ITERATIONS) as usize] = MAX_KEY as KeyType - iteration as KeyType;
         
         for i in 0..TEST_ARRAY_SIZE {
-            self.partial_verify_vals[i] = self.key_array[self.test_index_array[i] as usize];
+            self.partial_verify_vals[i] = self.key_array[self.test_index_array[i]];
         }
         
         let shift = MAX_KEY_LOG_2 - NUM_BUCKETS_LOG_2;
-        let num_bucket_keys = 1 << shift;
         
-        for thread_buckets in &mut self.bucket_size {
-            thread_buckets.fill(0);
+        // Clear bucket counts
+        for thread_bucket in &mut self.bucket_size {
+            thread_bucket.fill(0);
         }
         
         let chunk_size = (TOTAL_KEYS + self.num_threads - 1) / self.num_threads;
-        let bucket_counts: Vec<Vec<KeyType>> = self.key_array
-            .par_chunks(chunk_size)
-            .map(|chunk| {
-                let mut local_buckets = vec![0; NUM_BUCKETS];
+        
+        // Count keys in buckets (sequential to avoid race conditions)
+        for (chunk_idx, chunk) in self.key_array.chunks(chunk_size).enumerate() {
+            if chunk_idx < self.num_threads {
                 for &key in chunk {
                     let bucket_idx = (key >> shift) as usize;
                     if bucket_idx < NUM_BUCKETS {
-                        local_buckets[bucket_idx] += 1;
+                        self.bucket_size[chunk_idx][bucket_idx] += 1;
                     }
-                }
-                local_buckets
-            })
-            .collect();
-        
-        for (thread_id, local_buckets) in bucket_counts.into_iter().enumerate() {
-            if thread_id < self.num_threads {
-                for (i, count) in local_buckets.into_iter().enumerate() {
-                    self.bucket_size[thread_id][i] = count;
                 }
             }
         }
         
+        // Calculate bucket pointers
         self.bucket_ptrs[0] = 0;
         for i in 1..NUM_BUCKETS {
             self.bucket_ptrs[i] = self.bucket_ptrs[i-1];
@@ -214,46 +204,34 @@ impl ISBenchmark {
             }
         }
         
-        let mut thread_bucket_starts = vec![vec![0; NUM_BUCKETS]; self.num_threads];
+        // Calculate per-thread bucket offsets
+        let mut bucket_offsets = vec![vec![0; NUM_BUCKETS]; self.num_threads];
         for thread_id in 0..self.num_threads {
             for i in 0..NUM_BUCKETS {
-                thread_bucket_starts[thread_id][i] = self.bucket_ptrs[i];
+                bucket_offsets[thread_id][i] = self.bucket_ptrs[i];
                 for prev_thread in 0..thread_id {
-                    thread_bucket_starts[thread_id][i] += self.bucket_size[prev_thread][i];
+                    bucket_offsets[thread_id][i] += self.bucket_size[prev_thread][i];
                 }
             }
         }
         
-        let key_positions: Vec<Vec<(usize, KeyType)>> = self.key_array
-            .par_chunks(chunk_size)
-            .enumerate()
-            .map(|(thread_id, chunk)| {
-                let mut local_starts = if thread_id < thread_bucket_starts.len() {
-                    thread_bucket_starts[thread_id].clone()
-                } else {
-                    vec![0; NUM_BUCKETS]
-                };
-                let mut local_keys = Vec::new();
-                
+        // Place keys into buckets (sequential to maintain order)
+        for (chunk_idx, chunk) in self.key_array.chunks(chunk_size).enumerate() {
+            if chunk_idx < self.num_threads {
                 for &key in chunk {
                     let bucket_idx = (key >> shift) as usize;
-                    if bucket_idx < NUM_BUCKETS && local_starts[bucket_idx] < TOTAL_KEYS as KeyType {
-                        local_keys.push((local_starts[bucket_idx] as usize, key));
-                        local_starts[bucket_idx] += 1;
+                    if bucket_idx < NUM_BUCKETS {
+                        let pos = bucket_offsets[chunk_idx][bucket_idx] as usize;
+                        if pos < TOTAL_KEYS {
+                            self.key_buff2[pos] = key;
+                            bucket_offsets[chunk_idx][bucket_idx] += 1;
+                        }
                     }
-                }
-                local_keys
-            })
-            .collect();
-        
-        for local_keys in key_positions {
-            for (pos, key) in local_keys {
-                if pos < self.key_buff2.len() {
-                    self.key_buff2[pos] = key;
                 }
             }
         }
         
+        // Recalculate bucket pointers for ranking
         for i in 0..NUM_BUCKETS {
             self.bucket_ptrs[i] = 0;
             for thread_id in 0..self.num_threads {
@@ -264,50 +242,47 @@ impl ISBenchmark {
             }
         }
         
-        self.key_buff1.par_iter_mut().for_each(|x| *x = 0);
+        self.key_buff1.fill(0);
         
-        let atomic_counts: Vec<AtomicI64> = (0..MAX_KEY)
-            .map(|_| AtomicI64::new(0))
-            .collect();
+        let num_bucket_keys = 1 << shift;
         
-        (0..NUM_BUCKETS).into_par_iter().for_each(|i| {
+        // Process each bucket sequentially to maintain order
+        for i in 0..NUM_BUCKETS {
+            let k1 = i * num_bucket_keys;
+            let k2 = (k1 + num_bucket_keys).min(MAX_KEY);
+            
             let start = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
             let end = self.bucket_ptrs[i];
             
-            for k in start..end {
-                let key_idx = self.key_buff2[k as usize] as usize;
-                if key_idx < MAX_KEY {
-                    atomic_counts[key_idx].fetch_add(1, Ordering::Relaxed);
-                }
-            }
-        });
-        
-        for (i, atomic_count) in atomic_counts.iter().enumerate() {
-            self.key_buff1[i] = atomic_count.load(Ordering::Relaxed) as KeyType;
-        }
-        
-        (0..NUM_BUCKETS).into_par_iter().for_each(|i| {
-            let k1 = i * num_bucket_keys;
-            let k2 = k1 + num_bucket_keys;
-            let start = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
+            let mut local_counts = vec![0; k2 - k1];
             
-            if k1 < MAX_KEY {
-                let current_val = atomic_counts[k1].load(Ordering::Relaxed);
-                atomic_counts[k1].store(current_val + start as i64, Ordering::Relaxed);
-                
-                for k in (k1 + 1)..k2.min(MAX_KEY) {
-                    let prev_val = atomic_counts[k - 1].load(Ordering::Relaxed);
-                    let curr_val = atomic_counts[k].load(Ordering::Relaxed);
-                    atomic_counts[k].store(curr_val + prev_val, Ordering::Relaxed);
+            // Count occurrences of each key in this bucket
+            for idx in start..end {
+                let key = self.key_buff2[idx as usize] as usize;
+                if key >= k1 && key < k2 {
+                    local_counts[key - k1] += 1;
                 }
             }
-        });
-        
-        for (i, atomic_count) in atomic_counts.iter().enumerate() {
-            self.key_buff1[i] = atomic_count.load(Ordering::Relaxed) as KeyType;
+            
+            // Convert counts to cumulative sums (ranks)
+            local_counts[0] += start;
+            for j in 1..local_counts.len() {
+                local_counts[j] += local_counts[j-1];
+            }
+            
+            // Store results
+            for (j, &count) in local_counts.iter().enumerate() {
+                if k1 + j < MAX_KEY {
+                    self.key_buff1[k1 + j] = count;
+                }
+            }
         }
         
         self.partial_verify(iteration);
+        
+        if iteration == MAX_ITERATIONS {
+            self.key_buff_ptr_global = self.key_buff1.clone();
+        }
     }
     
     fn partial_verify(&mut self, iteration: i32) {
@@ -319,6 +294,7 @@ impl ISBenchmark {
                 } else {
                     0
                 };
+                
                 let mut failed = false;
                 
                 match CLASS {
@@ -369,51 +345,48 @@ impl ISBenchmark {
                 
                 if !failed {
                     self.passed_verification += 1;
+                } else if iteration == 1 {
+                    println!("Failed partial verification: iteration {}, test key {}", iteration, i);
+                    println!("Expected: {}, Got: {}", 
+                        if i <= 2 { self.test_rank_array[i] + iteration as KeyType } 
+                        else { self.test_rank_array[i] - iteration as KeyType },
+                        key_rank);
                 }
             }
         }
     }
     
     fn full_verify(&mut self) {
-        let atomic_counts: Vec<AtomicI64> = (0..MAX_KEY)
-            .map(|i| AtomicI64::new(self.key_buff1[i] as i64))
-            .collect();
-        
-        let sorted_keys: Vec<Vec<(usize, KeyType)>> = (0..NUM_BUCKETS)
-            .into_par_iter()
-            .map(|j| {
-                let k1 = if j > 0 { self.bucket_ptrs[j-1] } else { 0 };
-                let k2 = self.bucket_ptrs[j];
-                let mut local_sorted = Vec::new();
-                
-                for i in k1..k2 {
-                    let key = self.key_buff2[i as usize];
-                    if key > 0 && (key as usize) < MAX_KEY {
-                        let new_pos = atomic_counts[key as usize].fetch_sub(1, Ordering::Relaxed) - 1;
-                        if new_pos >= 0 && (new_pos as usize) < TOTAL_KEYS {
-                            local_sorted.push((new_pos as usize, key));
+        // Sort keys sequentially to ensure correctness
+        for j in 0..NUM_BUCKETS {
+            let k1 = if j > 0 { self.bucket_ptrs[j-1] } else { 0 };
+            let k2 = self.bucket_ptrs[j];
+            
+            for i in k1..k2 {
+                let key = self.key_buff2[i as usize];
+                if key > 0 && (key as usize) < MAX_KEY {
+                    let pos_idx = (key - 1) as usize;
+                    if pos_idx < self.key_buff_ptr_global.len() {
+                        self.key_buff_ptr_global[pos_idx] -= 1;
+                        let pos = self.key_buff_ptr_global[pos_idx];
+                        if (pos as usize) < TOTAL_KEYS {
+                            self.key_array[pos as usize] = key;
                         }
                     }
-                }
-                local_sorted
-            })
-            .collect();
-        
-        for bucket_keys in sorted_keys {
-            for (pos, key) in bucket_keys {
-                if pos < self.key_array.len() {
-                    self.key_array[pos] = key;
                 }
             }
         }
         
-        let errors = self.key_array
-            .par_windows(2)
-            .map(|pair| if pair[0] > pair[1] { 1 } else { 0 })
-            .sum::<i32>();
+        // Check if array is sorted
+        let mut error_count = 0;
+        for i in 1..TOTAL_KEYS {
+            if self.key_array[i-1] > self.key_array[i] {
+                error_count += 1;
+            }
+        }
         
-        if errors != 0 {
-            println!("Full_verify: number of keys out of sort: {}", errors);
+        if error_count != 0 {
+            println!("Full_verify: number of keys out of sort: {}", error_count);
         } else {
             self.passed_verification += 1;
         }
@@ -428,10 +401,14 @@ fn main() {
         1
     };
     
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(num_threads)
-        .build_global()
-        .unwrap();
+    if num_threads > 1 {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build_global()
+            .unwrap_or_else(|e| {
+                eprintln!("Failed to set thread pool: {}", e);
+            });
+    }
     
     println!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version - IS Benchmark\n");
     println!(" Size:  {}  (class {})", TOTAL_KEYS, CLASS.to_uppercase());
@@ -444,7 +421,6 @@ fn main() {
     let init_timer = Instant::now();
     benchmark.create_seq();
     let init_time = init_timer.elapsed().as_secs_f64();
-    println!(" Initialization time = {:.6} seconds", init_time);
     
     benchmark.rank(1);
     
