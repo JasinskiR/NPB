@@ -60,7 +60,7 @@ target_include_directories(is PRIVATE
 
 # Compiler flags
 target_compile_options(is PRIVATE 
-    -O0
+    -O3
     -march=native
 )
 

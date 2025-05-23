@@ -21,7 +21,7 @@ struct ISParameters {
     static constexpr int T_SORTING = 2;
     static constexpr int T_TOTAL_EXECUTION = 3;
     
-    int total_keys;        // Number of keys
+    int64_t total_keys;  // Change the type from int to int64_t or long long
     int max_key;           // Maximum key value
     int num_buckets;       // Number of buckets for bucket sort
     int iterations;        // Number of iterations

@@ -6,7 +6,7 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/IS -isystem /opt/homebrew/opt/libomp/include
 
-CXX_FLAGSarm64 =  -Xpreprocessor -fopenmp -std=c++2b -arch arm64 -O0 -march=native
+CXX_FLAGSarm64 =  -Xpreprocessor -fopenmp -std=c++2b -arch arm64 -O3 -march=native
 
-CXX_FLAGS =  -Xpreprocessor -fopenmp -std=c++2b -arch arm64 -O0 -march=native
+CXX_FLAGS =  -Xpreprocessor -fopenmp -std=c++2b -arch arm64 -O3 -march=native
 
