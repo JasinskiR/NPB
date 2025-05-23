@@ -1,0 +1,17 @@
+[package]
+name = "NPB-RUST-UFPEL"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "common"
+path = "./common/src/lib.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.24"
+fma = "0.1.0"
+lazy_static = "1.4.0"
+libm = "0.2.6"
+ndarray = "0.15.6"
+rayon = "1.6.1"
