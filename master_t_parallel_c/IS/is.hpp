@@ -8,6 +8,9 @@
 #include <functional>
 #include <array>
 
+// Enable bucket sort for better performance and correctness
+#define USE_BUCKETS
+
 namespace npb {
 namespace is {
 
@@ -99,6 +102,7 @@ private:
 
 // Parameter loading from npbparams.hpp
 ISParameters load_parameters();
+ISParameters load_parameters(char class_id = 'S');
 
 // Result reporting
 void print_results(const IntegerSort& is, const ISParameters& params, 

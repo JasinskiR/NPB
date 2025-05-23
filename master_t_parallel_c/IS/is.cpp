@@ -12,6 +12,13 @@
 #include <ranges>
 #include <memory>
 
+// Add this below the includes 
+
+// Make sure bucket sort is enabled
+#ifndef USE_BUCKETS
+#define USE_BUCKETS
+#endif
+
 namespace {
     // Local aliases for timer constants
     constexpr auto T_BENCHMARKING = npb::is::ISParameters::T_BENCHMARKING;
@@ -23,32 +30,55 @@ namespace {
 namespace npb {
 namespace is {
 
-// Load parameters from npbparams.hpp
-ISParameters load_parameters() {
+// Update the load_parameters implementation
+ISParameters load_parameters(char class_id) {
     ISParameters params;
     
-    // These values should be defined in npbparams.hpp
-    #ifdef TOTAL_KEYS_LOG_2
-    params.total_keys = 1L << TOTAL_KEYS_LOG_2;
-    #endif
+    // Set class ID from parameter
+    params.class_id = class_id;
     
-    #ifdef MAX_KEY_LOG_2
-    params.max_key = 1 << MAX_KEY_LOG_2;
-    #endif
-    
-    #ifdef NUM_BUCKETS_LOG_2
-    params.num_buckets = 1 << NUM_BUCKETS_LOG_2;
-    #endif
-    
-    #ifdef MAX_ITERATIONS
-    params.iterations = MAX_ITERATIONS;
-    #else
-    params.iterations = 10;
-    #endif
-    
-    #ifdef CLASS
-    params.class_id = CLASS;
-    #endif
+    // Set parameters based on class
+    switch (class_id) {
+        case 'S':
+            params.total_keys = 1 << 16;          // 65,536
+            params.max_key = 1 << 16;             // 65,536 
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        case 'W':
+            params.total_keys = 1 << 20;          // 1,048,576
+            params.max_key = 1 << 20;             // 1,048,576
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        case 'A':
+            params.total_keys = 1 << 23;          // 8,388,608
+            params.max_key = 1 << 23;             // 8,388,608
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        case 'B':
+            params.total_keys = 1 << 25;          // 33,554,432
+            params.max_key = 1 << 25;             // 33,554,432
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        case 'C':
+            params.total_keys = 1 << 27;          // 134,217,728
+            params.max_key = 1 << 27;             // 134,217,728
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        case 'D':
+            params.total_keys = 1 << 31;          // 2,147,483,648
+            params.max_key = 1 << 31;             // 2,147,483,648
+            params.iterations = 10;
+            params.num_buckets = 1 << 10;         // 1,024
+            break;
+        default:
+            std::cerr << "ERROR: Unknown class '" << class_id << "'. Using class S.\n";
+            return load_parameters('S');
+    }
     
     // Set up verification values based on class
     switch (params.class_id) {
@@ -371,8 +401,11 @@ void IntegerSort::rank(int iteration) {
     #endif
     KeyType* key_buff_ptr = key_buff1_.data();
     
+    // Clear key_buff1 (rank array)
+    std::fill(key_buff_ptr, key_buff_ptr + params_.max_key, 0);
+    
     #ifdef USE_BUCKETS
-    // Perform bucket sort
+    // Perform bucket sort with enhanced synchronization
     #pragma omp parallel
     {
         int thread_id = omp_get_thread_num();
@@ -391,7 +424,7 @@ void IntegerSort::rank(int iteration) {
         // Synchronize threads before bucket pointer calculation
         #pragma omp barrier
         
-        // Calculate global bucket pointers
+        // Calculate global bucket pointers with explicit synchronization
         #pragma omp single
         {
             // Initialize first bucket pointer
@@ -432,57 +465,62 @@ void IntegerSort::rank(int iteration) {
         // Update global bucket pointers with final counts
         #pragma omp single
         {
+            KeyType sum = 0;
             for (int i = 0; i < params_.num_buckets; i++) {
-                KeyType total = bucket_ptrs_[i];
+                KeyType current = 0;
                 for (int t = 0; t < num_threads; t++) {
-                    total += bucket_size_[t][i];
+                    current += bucket_size_[t][i];
                 }
-                bucket_ptrs_[i] = total;
+                sum += current;
+                bucket_ptrs_[i] = sum;
             }
         }
         
         // Sort keys within each bucket (rank array population)
         #pragma omp for schedule(dynamic)
         for (int i = 0; i < params_.num_buckets; i++) {
-            // Clear the rank array for this bucket
+            // Determine range for this bucket
             KeyType k1 = i * num_bucket_keys;
             KeyType k2 = k1 + num_bucket_keys;
             
+            // Clear the rank array for this bucket
             for (KeyType k = k1; k < k2; k++) {
                 key_buff_ptr[k] = 0;
             }
             
             // Count occurrence of each key in this bucket
             KeyType bucket_start = (i > 0) ? bucket_ptrs_[i-1] : 0;
-            for (KeyType k = bucket_start; k < bucket_ptrs_[i]; k++) {
+            KeyType bucket_end = bucket_ptrs_[i];
+            
+            for (KeyType k = bucket_start; k < bucket_end; k++) {
                 key_buff_ptr[key_buff_ptr2[k]]++;
             }
             
             // Calculate ranks by cumulative sum
-            key_buff_ptr[k1] += bucket_start;
-            for (KeyType k = k1 + 1; k < k2; k++) {
-                key_buff_ptr[k] += key_buff_ptr[k-1];
+            KeyType sum = bucket_start;
+            for (KeyType k = k1; k < k2; k++) {
+                sum += key_buff_ptr[k];
+                key_buff_ptr[k] = sum;
             }
         }
     }
     #else
-    // Non-bucket sort
+    // Non-bucket sort with better synchronization
     #pragma omp parallel
     {
         int thread_id = omp_get_thread_num();
-        int num_threads = omp_get_num_threads();
         KeyType* work_buff = key_buff1_aptr_[thread_id];
         
         // Clear work array
         std::fill(work_buff, work_buff + params_.max_key, 0);
         
         // Count occurrences of each key
-        #pragma omp for
+        #pragma omp for schedule(static)
         for (int i = 0; i < params_.total_keys; i++) {
             work_buff[key_buff_ptr2[i]]++;
         }
         
-        // Merge counts from all threads
+        // Merge counts from all threads with proper synchronization
         #pragma omp critical
         {
             for (KeyType i = 0; i < params_.max_key; i++) {
@@ -491,10 +529,13 @@ void IntegerSort::rank(int iteration) {
         }
         
         // Calculate ranks by cumulative sum
+        #pragma omp barrier
         #pragma omp single
         {
-            for (KeyType i = 0; i < params_.max_key - 1; i++) {
-                key_buff_ptr[i+1] += key_buff_ptr[i];
+            KeyType sum = 0;
+            for (KeyType i = 0; i < params_.max_key; i++) {
+                sum += key_buff_ptr[i];
+                key_buff_ptr[i] = sum;
             }
         }
     }
@@ -730,17 +771,6 @@ void print_results(const IntegerSort& is, const ISParameters& params,
    
    // Thread information
    std::cout << " Total threads   =             " << std::setw(12) << omp_get_max_threads() << "\n\n";
-   
-   // Footer
-   std::cout << "----------------------------------------------------------------------\n";
-   std::cout << "    NPB-CPP is developed by: \n";
-   std::cout << "        Dalvan Griebler\n";
-   std::cout << "        Gabriell Araujo (Sequential Porting)\n";
-   std::cout << "        Júnior Löff (Parallel Implementation)\n";
-   std::cout << "\n";
-   std::cout << "    Modern C++23 with OpenMP implementation by your request\n";
-   std::cout << "----------------------------------------------------------------------\n";
-   std::cout << "\n";
 }
 
 } // namespace is
