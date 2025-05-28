@@ -18,6 +18,7 @@ use common::randdp;
 use std::time::Instant;
 use std::env;
 use rayon::prelude::*;
+use std::sync::{Arc, Mutex};
 
 #[cfg(not(any(feature = "class_c", feature = "class_d")))]
 type KeyType = i32;
@@ -175,19 +176,29 @@ impl ISBenchmark {
         let shift = MAX_KEY_LOG_2 - NUM_BUCKETS_LOG_2;
         let num_bucket_keys = 1 << shift;
         
-        for thread_bucket in &mut self.bucket_size {
+        self.bucket_size.par_iter_mut().for_each(|thread_bucket| {
             thread_bucket.fill(0);
-        }
+        });
         
         let chunk_size = (TOTAL_KEYS + self.num_threads - 1) / self.num_threads;
         
-        for (thread_id, chunk) in self.key_array.chunks(chunk_size).enumerate() {
-            if thread_id < self.num_threads {
-                for &key in chunk {
-                    let bucket_idx = (key >> shift) as usize;
-                    if bucket_idx < NUM_BUCKETS {
-                        self.bucket_size[thread_id][bucket_idx] += 1;
+        if self.num_threads > 1 {
+            self.key_array
+                .par_chunks(chunk_size)
+                .zip(&mut self.bucket_size)
+                .for_each(|(chunk, thread_bucket)| {
+                    for &key in chunk {
+                        let bucket_idx = (key >> shift) as usize;
+                        if bucket_idx < NUM_BUCKETS {
+                            thread_bucket[bucket_idx] += 1;
+                        }
                     }
+                });
+        } else {
+            for &key in &self.key_array {
+                let bucket_idx = (key >> shift) as usize;
+                if bucket_idx < NUM_BUCKETS {
+                    self.bucket_size[0][bucket_idx] += 1;
                 }
             }
         }
@@ -236,28 +247,56 @@ impl ISBenchmark {
         }
         self.bucket_ptrs[NUM_BUCKETS] = self.bucket_ptrs[NUM_BUCKETS - 1];
         
-        self.key_buff1.fill(0);
-        
-        for i in 0..NUM_BUCKETS {
-            let k1 = i * num_bucket_keys;
-            let k2 = k1 + num_bucket_keys;
+        if self.num_threads > 1 && NUM_BUCKETS > 8 {
+            let key_buff1_shared = Arc::new(Mutex::new(&mut self.key_buff1));
             
-            for k in k1..k2.min(MAX_KEY) {
-                self.key_buff1[k] = 0;
-            }
-            
-            let m = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
-            for k in m..self.bucket_ptrs[i] {
-                let key = self.key_buff2[k as usize] as usize;
-                if key < MAX_KEY {
-                    self.key_buff1[key] += 1;
+            (0..NUM_BUCKETS).into_par_iter().for_each(|i| {
+                let k1 = i * num_bucket_keys;
+                let k2 = k1 + num_bucket_keys;
+                
+                if k1 < MAX_KEY {
+                    let slice_end = k2.min(MAX_KEY);
+                    let mut local_counts = vec![0; slice_end - k1];
+                    
+                    let m = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
+                    for k in m..self.bucket_ptrs[i] {
+                        let key = self.key_buff2[k as usize] as usize;
+                        if key >= k1 && key < slice_end {
+                            local_counts[key - k1] += 1;
+                        }
+                    }
+                    
+                    local_counts[0] += m;
+                    for j in 1..local_counts.len() {
+                        local_counts[j] += local_counts[j-1];
+                    }
+                    
+                    let mut key_buff1_guard = key_buff1_shared.lock().unwrap();
+                    for (j, &count) in local_counts.iter().enumerate() {
+                        key_buff1_guard[k1 + j] = count;
+                    }
                 }
-            }
+            });
+        } else {
+            self.key_buff1.fill(0);
             
-            if k1 < MAX_KEY {
-                self.key_buff1[k1] += m;
-                for k in (k1 + 1)..k2.min(MAX_KEY) {
-                    self.key_buff1[k] += self.key_buff1[k-1];
+            for i in 0..NUM_BUCKETS {
+                let k1 = i * num_bucket_keys;
+                let k2 = k1 + num_bucket_keys;
+                
+                let m = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
+                for k in m..self.bucket_ptrs[i] {
+                    let key = self.key_buff2[k as usize] as usize;
+                    if key < MAX_KEY {
+                        self.key_buff1[key] += 1;
+                    }
+                }
+                
+                if k1 < MAX_KEY {
+                    self.key_buff1[k1] += m;
+                    for k in (k1 + 1)..k2.min(MAX_KEY) {
+                        self.key_buff1[k] += self.key_buff1[k-1];
+                    }
                 }
             }
         }
@@ -400,12 +439,20 @@ impl ISBenchmark {
             }
         }
         
-        let mut error_count = 0;
-        for i in 1..TOTAL_KEYS {
-            if self.key_array[i-1] > self.key_array[i] {
-                error_count += 1;
+        let error_count = if self.num_threads > 1 && TOTAL_KEYS > 100000 {
+            self.key_array[1..]
+                .par_windows(2)
+                .filter(|w| w[0] > w[1])
+                .count()
+        } else {
+            let mut count = 0;
+            for i in 1..TOTAL_KEYS {
+                if self.key_array[i-1] > self.key_array[i] {
+                    count += 1;
+                }
             }
-        }
+            count
+        };
         
         if error_count != 0 {
             println!("Full_verify: number of keys out of sort: {}", error_count);
