@@ -18,7 +18,6 @@ use common::randdp;
 use std::time::Instant;
 use std::env;
 use rayon::prelude::*;
-use std::sync::atomic::{AtomicI32, Ordering};
 
 #[cfg(not(any(feature = "class_c", feature = "class_d")))]
 type KeyType = i32;
@@ -48,7 +47,7 @@ impl ISBenchmark {
             key_buff2: vec![0; TOTAL_KEYS],
             partial_verify_vals: vec![0; TEST_ARRAY_SIZE],
             bucket_size: vec![vec![0; NUM_BUCKETS]; num_threads],
-            bucket_ptrs: vec![0; NUM_BUCKETS],
+            bucket_ptrs: vec![0; NUM_BUCKETS + 1],
             test_index_array: [0; TEST_ARRAY_SIZE],
             test_rank_array: [0; TEST_ARRAY_SIZE],
             passed_verification: 0,
@@ -103,7 +102,6 @@ impl ISBenchmark {
                     return None;
                 }
                 
-                let actual_size = end_idx - start_idx;
                 let s = Self::find_my_seed(
                     thread_id as i32,
                     self.num_threads as i32,
@@ -114,15 +112,15 @@ impl ISBenchmark {
                 
                 let mut seed = s;
                 let k = (MAX_KEY / 4) as f64;
-                let mut chunk = vec![0; actual_size];
+                let mut chunk = Vec::with_capacity(end_idx - start_idx);
                 
-                for key in chunk.iter_mut() {
+                for _ in start_idx..end_idx {
                     let mut x = randdp::randlc(&mut seed, 1220703125.0);
                     x += randdp::randlc(&mut seed, 1220703125.0);
                     x += randdp::randlc(&mut seed, 1220703125.0);
                     x += randdp::randlc(&mut seed, 1220703125.0);
                     
-                    *key = (k * x) as KeyType;
+                    chunk.push((k * x) as KeyType);
                 }
                 
                 Some((start_idx, chunk))
@@ -168,43 +166,40 @@ impl ISBenchmark {
     
     fn rank(&mut self, iteration: i32) {
         self.key_array[iteration as usize] = iteration as KeyType;
-        self.key_array[(iteration + MAX_ITERATIONS) as usize] = MAX_KEY as KeyType - iteration as KeyType;
+        self.key_array[(iteration + MAX_ITERATIONS) as usize] = (MAX_KEY as KeyType) - (iteration as KeyType);
         
         for i in 0..TEST_ARRAY_SIZE {
             self.partial_verify_vals[i] = self.key_array[self.test_index_array[i]];
         }
         
         let shift = MAX_KEY_LOG_2 - NUM_BUCKETS_LOG_2;
+        let num_bucket_keys = 1 << shift;
         
-        // Clear bucket counts
         for thread_bucket in &mut self.bucket_size {
             thread_bucket.fill(0);
         }
         
         let chunk_size = (TOTAL_KEYS + self.num_threads - 1) / self.num_threads;
         
-        // Count keys in buckets (sequential to avoid race conditions)
-        for (chunk_idx, chunk) in self.key_array.chunks(chunk_size).enumerate() {
-            if chunk_idx < self.num_threads {
+        for (thread_id, chunk) in self.key_array.chunks(chunk_size).enumerate() {
+            if thread_id < self.num_threads {
                 for &key in chunk {
                     let bucket_idx = (key >> shift) as usize;
                     if bucket_idx < NUM_BUCKETS {
-                        self.bucket_size[chunk_idx][bucket_idx] += 1;
+                        self.bucket_size[thread_id][bucket_idx] += 1;
                     }
                 }
             }
         }
         
-        // Calculate bucket pointers
         self.bucket_ptrs[0] = 0;
         for i in 1..NUM_BUCKETS {
             self.bucket_ptrs[i] = self.bucket_ptrs[i-1];
-            for thread_id in 0..self.num_threads {
-                self.bucket_ptrs[i] += self.bucket_size[thread_id][i-1];
+            for k in 0..self.num_threads {
+                self.bucket_ptrs[i] += self.bucket_size[k][i-1];
             }
         }
         
-        // Calculate per-thread bucket offsets
         let mut bucket_offsets = vec![vec![0; NUM_BUCKETS]; self.num_threads];
         for thread_id in 0..self.num_threads {
             for i in 0..NUM_BUCKETS {
@@ -215,65 +210,54 @@ impl ISBenchmark {
             }
         }
         
-        // Place keys into buckets (sequential to maintain order)
-        for (chunk_idx, chunk) in self.key_array.chunks(chunk_size).enumerate() {
-            if chunk_idx < self.num_threads {
+        for (thread_id, chunk) in self.key_array.chunks(chunk_size).enumerate() {
+            if thread_id < self.num_threads {
                 for &key in chunk {
                     let bucket_idx = (key >> shift) as usize;
                     if bucket_idx < NUM_BUCKETS {
-                        let pos = bucket_offsets[chunk_idx][bucket_idx] as usize;
+                        let pos = bucket_offsets[thread_id][bucket_idx] as usize;
                         if pos < TOTAL_KEYS {
                             self.key_buff2[pos] = key;
-                            bucket_offsets[chunk_idx][bucket_idx] += 1;
+                            bucket_offsets[thread_id][bucket_idx] += 1;
                         }
                     }
                 }
             }
         }
         
-        // Recalculate bucket pointers for ranking
         for i in 0..NUM_BUCKETS {
             self.bucket_ptrs[i] = 0;
-            for thread_id in 0..self.num_threads {
-                self.bucket_ptrs[i] += self.bucket_size[thread_id][i];
+            for k in 0..self.num_threads {
+                self.bucket_ptrs[i] += self.bucket_size[k][i];
             }
             if i > 0 {
                 self.bucket_ptrs[i] += self.bucket_ptrs[i-1];
             }
         }
+        self.bucket_ptrs[NUM_BUCKETS] = self.bucket_ptrs[NUM_BUCKETS - 1];
         
         self.key_buff1.fill(0);
         
-        let num_bucket_keys = 1 << shift;
-        
-        // Process each bucket sequentially to maintain order
         for i in 0..NUM_BUCKETS {
             let k1 = i * num_bucket_keys;
-            let k2 = (k1 + num_bucket_keys).min(MAX_KEY);
+            let k2 = k1 + num_bucket_keys;
             
-            let start = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
-            let end = self.bucket_ptrs[i];
+            for k in k1..k2.min(MAX_KEY) {
+                self.key_buff1[k] = 0;
+            }
             
-            let mut local_counts = vec![0; k2 - k1];
-            
-            // Count occurrences of each key in this bucket
-            for idx in start..end {
-                let key = self.key_buff2[idx as usize] as usize;
-                if key >= k1 && key < k2 {
-                    local_counts[key - k1] += 1;
+            let m = if i > 0 { self.bucket_ptrs[i-1] } else { 0 };
+            for k in m..self.bucket_ptrs[i] {
+                let key = self.key_buff2[k as usize] as usize;
+                if key < MAX_KEY {
+                    self.key_buff1[key] += 1;
                 }
             }
             
-            // Convert counts to cumulative sums (ranks)
-            local_counts[0] += start;
-            for j in 1..local_counts.len() {
-                local_counts[j] += local_counts[j-1];
-            }
-            
-            // Store results
-            for (j, &count) in local_counts.iter().enumerate() {
-                if k1 + j < MAX_KEY {
-                    self.key_buff1[k1 + j] = count;
+            if k1 < MAX_KEY {
+                self.key_buff1[k1] += m;
+                for k in (k1 + 1)..k2.min(MAX_KEY) {
+                    self.key_buff1[k] += self.key_buff1[k-1];
                 }
             }
         }
@@ -288,7 +272,7 @@ impl ISBenchmark {
     fn partial_verify(&mut self, iteration: i32) {
         for i in 0..TEST_ARRAY_SIZE {
             let k = self.partial_verify_vals[i];
-            if k > 0 && k <= TOTAL_KEYS as KeyType - 1 {
+            if k > 0 && k <= (TOTAL_KEYS as KeyType - 1) {
                 let key_rank = if k > 0 && ((k - 1) as usize) < self.key_buff1.len() {
                     self.key_buff1[(k - 1) as usize]
                 } else {
@@ -300,84 +284,122 @@ impl ISBenchmark {
                 match CLASS {
                     "s" => {
                         if i <= 2 {
-                            failed = key_rank != self.test_rank_array[i] + iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] + iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] - iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     "w" => {
                         if i < 2 {
-                            failed = key_rank != self.test_rank_array[i] + (iteration - 2) as KeyType;
+                            if key_rank != self.test_rank_array[i] + (iteration - 2) as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] - iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     "a" => {
                         if i <= 2 {
-                            failed = key_rank != self.test_rank_array[i] + (iteration - 1) as KeyType;
+                            if key_rank != self.test_rank_array[i] + (iteration - 1) as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - (iteration - 1) as KeyType;
+                            if key_rank != self.test_rank_array[i] - (iteration - 1) as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     "b" => {
                         if i == 1 || i == 2 || i == 4 {
-                            failed = key_rank != self.test_rank_array[i] + iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] + iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] - iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     "c" => {
                         if i <= 2 {
-                            failed = key_rank != self.test_rank_array[i] + iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] + iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] - iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     "d" => {
                         if i < 2 {
-                            failed = key_rank != self.test_rank_array[i] + iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] + iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         } else {
-                            failed = key_rank != self.test_rank_array[i] - iteration as KeyType;
+                            if key_rank != self.test_rank_array[i] - iteration as KeyType {
+                                failed = true;
+                            } else {
+                                self.passed_verification += 1;
+                            }
                         }
                     }
                     _ => {}
                 }
                 
-                if !failed {
-                    self.passed_verification += 1;
-                } else if iteration == 1 {
+                if failed {
                     println!("Failed partial verification: iteration {}, test key {}", iteration, i);
-                    println!("Expected: {}, Got: {}", 
-                        if i <= 2 { self.test_rank_array[i] + iteration as KeyType } 
-                        else { self.test_rank_array[i] - iteration as KeyType },
-                        key_rank);
                 }
             }
         }
     }
     
     fn full_verify(&mut self) {
-        // Sort keys sequentially to ensure correctness
         for j in 0..NUM_BUCKETS {
             let k1 = if j > 0 { self.bucket_ptrs[j-1] } else { 0 };
             let k2 = self.bucket_ptrs[j];
             
             for i in k1..k2 {
                 let key = self.key_buff2[i as usize];
-                if key > 0 && (key as usize) < MAX_KEY {
-                    let pos_idx = (key - 1) as usize;
-                    if pos_idx < self.key_buff_ptr_global.len() {
-                        self.key_buff_ptr_global[pos_idx] -= 1;
-                        let pos = self.key_buff_ptr_global[pos_idx];
-                        if (pos as usize) < TOTAL_KEYS {
-                            self.key_array[pos as usize] = key;
-                        }
+                if key >= 0 && (key as usize) < MAX_KEY {
+                    let key_idx = key as usize;
+                    self.key_buff_ptr_global[key_idx] -= 1;
+                    let k = self.key_buff_ptr_global[key_idx];
+                    if k >= 0 && (k as usize) < TOTAL_KEYS {
+                        self.key_array[k as usize] = key;
                     }
                 }
             }
         }
         
-        // Check if array is sorted
         let mut error_count = 0;
         for i in 1..TOTAL_KEYS {
             if self.key_array[i-1] > self.key_array[i] {
@@ -423,6 +445,8 @@ fn main() {
     let init_time = init_timer.elapsed().as_secs_f64();
     
     benchmark.rank(1);
+    
+    benchmark.passed_verification = 0;
     
     if CLASS != "s" {
         println!("\n   iteration");
