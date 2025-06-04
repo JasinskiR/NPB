@@ -1,112 +1,133 @@
-// is.hpp
 #pragma once
 
 #include <cstdint>
 #include <vector>
 #include <string>
 #include <memory>
-#include <functional>
 #include <array>
+#include <span>
+#include <ranges>
+#include <concepts>
+#include <execution>
+#include <atomic>
+#include <chrono>
+#include <filesystem>
+#include <bit>
+#include <print>
 
-// Enable bucket sort for better performance and correctness
 #define USE_BUCKETS
 
 namespace npb {
 namespace is {
 
-// Class constants and parameters
+template<std::integral KeyType = int64_t>
 struct ISParameters {
     static constexpr int T_BENCHMARKING = 0;
     static constexpr int T_INITIALIZATION = 1;
     static constexpr int T_SORTING = 2;
     static constexpr int T_TOTAL_EXECUTION = 3;
     
-    int64_t total_keys;  // Change the type from int to int64_t or long long
-    int max_key;           // Maximum key value
-    int num_buckets;       // Number of buckets for bucket sort
-    int iterations;        // Number of iterations
-    char class_id;         // Problem class ('S', 'W', 'A', 'B', 'C', 'D')
+    int64_t total_keys;
+    int max_key;
+    int num_buckets;
+    int iterations;
+    char class_id;
     
-    // Verification values
     std::array<int64_t, 5> test_index_array;
     std::array<int64_t, 5> test_rank_array;
     static constexpr int TEST_ARRAY_SIZE = 5;
 };
 
-// Main Integer Sort class
+template<std::integral KeyType = int64_t>
 class IntegerSort {
 public:
-    using KeyType = int64_t; // For class D and above, use 64-bit integers
+    explicit IntegerSort(const ISParameters<KeyType>& params);
+    ~IntegerSort() = default;
     
-    explicit IntegerSort(const ISParameters& params);
-    ~IntegerSort();
-    
-    // Run the benchmark
     void run();
     
-    // Get benchmark results
-    double getExecutionTime() const;
-    double getMopsTotal() const;
-    bool getVerificationStatus() const;
-    
+    [[nodiscard]] double getExecutionTime() const noexcept;
+    [[nodiscard]] double getMopsTotal() const noexcept;
+    [[nodiscard]] bool getVerificationStatus() const noexcept;
+    [[nodiscard]] double getTimer(int timer_id) const noexcept {
+        if (timer_id >= 0 && timer_id < timer_values_.size()) {
+            return timer_values_[timer_id];
+        }
+        return 0.0;
+    }
+    [[nodiscard]] bool getUseBuckets() const noexcept {
+        return use_buckets;
+    }
+
 private:
-    // Core sorting function
+    class RandomGenerator {
+    public:
+        RandomGenerator(double seed, double a);
+        double next();
+        
+    private:
+        void compute_constants();
+        double x_, a_;
+        double r23_, r46_, t23_, t46_;
+        double a1_, a2_;
+    };
+    
+    struct TimerGuard {
+        TimerGuard(IntegerSort& is, int timer_id);
+        ~TimerGuard();
+        
+        IntegerSort& is_;
+        int timer_id_;
+    };
+    
     void rank(int iteration);
-    
-    // Verification function
     void full_verify();
-    
-    // Initialization functions
     void create_seq(double seed, double a);
     double find_my_seed(int kn, int np, int64_t nn, double s, double a);
-    
-    // Memory allocation
     void allocate_key_buffer();
-    void* alloc_memory(size_t size);
     
-    // Timer functions
-    void timer_clear(int timer);
-    void timer_start(int timer);
-    void timer_stop(int timer);
-    double timer_read(int timer) const;
+    void rank_with_buckets(int iteration);
+    void rank_without_buckets(int iteration);
+    void verify_partial_results(int iteration);
+    void compute_bucket_offsets(int num_threads);
+    void distribute_keys_to_buckets(int thread_id, int num_threads, int shift);
+    void rank_bucket_keys(int bucket_id, KeyType num_bucket_keys);
+    void accumulate_counts_globally(KeyType* work_buff);
+    void verify_with_buckets();
+    void verify_without_buckets();
     
-    // Random number generation
-    double randlc(double* x, double a);
-    void vranlc(int n, double* x_seed, double a, double y[]);
+    auto make_timer_guard(int timer_id);
     
-    // Data members
-    ISParameters params_;
+    static constexpr bool use_buckets = true;
+    
+    ISParameters<KeyType> params_;
     bool verified_ = false;
-    int passed_verification_ = 0;
+    std::atomic<int> passed_verification_{0};
     double execution_time_ = 0.0;
     bool timers_enabled_ = false;
     
-    // Main key arrays
-    std::vector<KeyType> key_array_;      // Main array of keys
-    std::vector<KeyType> key_buff1_;      // Work array for keys
-    std::vector<KeyType> key_buff2_;      // Work array for keys
-    std::vector<KeyType> partial_verify_vals_; // For partial verification
-    KeyType* key_buff_ptr_global_ = nullptr; // For full verification
+    std::vector<KeyType> key_array_;
+    std::vector<KeyType> key_buff1_;
+    std::vector<KeyType> key_buff2_;
+    std::vector<KeyType> partial_verify_vals_;
+    KeyType* key_buff_ptr_global_ = nullptr;
     
-    // Bucket sort data
-    #ifdef USE_BUCKETS
     std::vector<std::vector<KeyType>> bucket_size_;
     std::vector<KeyType> bucket_ptrs_;
-    #else
     std::vector<KeyType*> key_buff1_aptr_;
-    #endif
     
-    // Timer data
     std::array<double, 4> timer_values_{};
 };
 
-// Parameter loading from npbparams.hpp
-ISParameters load_parameters();
-ISParameters load_parameters(char class_id = 'S');
+template<std::integral KeyType = int64_t>
+ISParameters<KeyType> load_parameters(char class_id = 'S');
 
-// Result reporting
-void print_results(const IntegerSort& is, const ISParameters& params, 
-                  const std::string& name, const std::string& optype);
+template<std::integral KeyType = int64_t>
+void print_results(const IntegerSort<KeyType>& is, const ISParameters<KeyType>& params, 
+                  std::string_view name, std::string_view optype);
+
+using ISParameters64 = ISParameters<int64_t>;
+using IntegerSort64 = IntegerSort<int64_t>;
 
 } // namespace is
 } // namespace npb
