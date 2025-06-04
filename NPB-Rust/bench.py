@@ -247,8 +247,8 @@ class UnifiedNPBAnalyzer:
         Parser for EP (Embarrassingly Parallel) benchmark output.
         
         EP-specific patterns:
-        - Verification: "VERIFICATION SUCCESSFUL"
-        - Performance: "Mop/s total = X.XX"
+        - Verification: "Verification    =               SUCCESSFUL"
+        - Performance: "Mop/s total     = X.XX"
         - Fields: "class_npb       =", "Total threads   ="
         """
         verification = False
@@ -261,12 +261,17 @@ class UnifiedNPBAnalyzer:
         operation_type = "N/A"
         version_npb = "N/A"
         
-        if "VERIFICATION SUCCESSFUL" in output:
-            verification = True
+        # Check for EP verification pattern (flexible spacing)
+        if "Verification" in output and "SUCCESSFUL" in output:
+            for line in output.split('\n'):
+                if "Verification" in line and "SUCCESSFUL" in line:
+                    verification = True
+                    break
         
         for line in output.split('\n'):
             line = line.strip()
             
+            # Performance metrics - EP uses "Mop/s total     ="
             if 'Mop/s total' in line and '=' in line:
                 try:
                     mflops = float(line.split('=')[1].strip())
@@ -277,32 +282,32 @@ class UnifiedNPBAnalyzer:
                     time_val = float(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'class_npb       =' in line:
+            elif 'class_npb' in line and '=' in line:
                 try:
                     class_npb_reported = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Size            =' in line:
+            elif 'Size' in line and '=' in line and 'class' not in line:
                 try:
                     size_reported = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Total threads   =' in line:
+            elif 'Total threads' in line and '=' in line:
                 try:
                     total_threads_reported = int(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'Iterations      =' in line:
+            elif 'Iterations' in line and '=' in line:
                 try:
                     iterations_reported = int(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'Operation type  =' in line:
+            elif 'Operation type' in line and '=' in line:
                 try:
                     operation_type = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Version         =' in line:
+            elif 'Version' in line and '=' in line:
                 try:
                     version_npb = line.split('=')[1].strip()
                 except:
@@ -316,8 +321,8 @@ class UnifiedNPBAnalyzer:
         Parser for CG (Conjugate Gradient) benchmark output.
         
         CG-specific patterns:
-        - Verification: "VERIFICATION SUCCESSFUL"
-        - Performance: "Mop/s total = X.XX"
+        - Verification: "Verification    =               SUCCESSFUL"
+        - Performance: "Mop/s total     = X.XX"
         - Fields: "class_npb       =", "Total threads   ="
         """
         verification = False
@@ -330,12 +335,17 @@ class UnifiedNPBAnalyzer:
         operation_type = "N/A"
         version_npb = "N/A"
         
-        if "VERIFICATION SUCCESSFUL" in output:
-            verification = True
+        # Check for CG verification pattern (flexible spacing)
+        if "Verification" in output and "SUCCESSFUL" in output:
+            for line in output.split('\n'):
+                if "Verification" in line and "SUCCESSFUL" in line:
+                    verification = True
+                    break
         
         for line in output.split('\n'):
             line = line.strip()
             
+            # Performance metrics - CG uses "Mop/s total     ="
             if 'Mop/s total' in line and '=' in line:
                 try:
                     mflops = float(line.split('=')[1].strip())
@@ -346,32 +356,32 @@ class UnifiedNPBAnalyzer:
                     time_val = float(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'class_npb       =' in line:
+            elif 'class_npb' in line and '=' in line:
                 try:
                     class_npb_reported = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Size            =' in line:
+            elif 'Size' in line and '=' in line and 'class' not in line:
                 try:
                     size_reported = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Total threads   =' in line:
+            elif 'Total threads' in line and '=' in line:
                 try:
                     total_threads_reported = int(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'Iterations      =' in line:
+            elif 'Iterations' in line and '=' in line:
                 try:
                     iterations_reported = int(line.split('=')[1].strip())
                 except:
                     pass
-            elif 'Operation type  =' in line:
+            elif 'Operation type' in line and '=' in line:
                 try:
                     operation_type = line.split('=')[1].strip()
                 except:
                     pass
-            elif 'Version         =' in line:
+            elif 'Version' in line and '=' in line:
                 try:
                     version_npb = line.split('=')[1].strip()
                 except:
