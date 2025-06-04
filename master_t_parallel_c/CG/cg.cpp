@@ -4,71 +4,96 @@
 #include <cmath>
 #include <iostream>
 #include <algorithm>
-#include <execution>
 #include <stdexcept>
-#include <random>
+#include <ranges>
+#include <execution>
 
 namespace npb::cg {
 
-// Convert a double in [0,1] to an integer power of 2
-int64_t convert_real_to_int(double x, int64_t power2) {
+static double tran = 314159265.0;
+static double amult = 1220703125.0;
+
+double randlc(double *x, double a) noexcept {
+    static int ks = 0;
+    static double r23, r46, t23, t46;
+    double t1, t2, t3, t4, a1, a2, x1, x2, z;
+    int i, j;
+
+    if (ks == 0) {
+        r23 = 1.0;
+        r46 = 1.0;
+        t23 = 1.0;
+        t46 = 1.0;
+
+        for (i = 1; i <= 23; i++) {
+            r23 = 0.50 * r23;
+            t23 = 2.0 * t23;
+        }
+        for (i = 1; i <= 46; i++) {
+            r46 = 0.50 * r46;
+            t46 = 2.0 * t46;
+        }
+        ks = 1;
+    }
+
+    t1 = r23 * a;
+    j = static_cast<int>(t1);
+    a1 = j;
+    a2 = a - t23 * a1;
+
+    t1 = r23 * (*x);
+    j = static_cast<int>(t1);
+    x1 = j;
+    x2 = *x - t23 * x1;
+    t1 = a1 * x2 + a2 * x1;
+
+    j = static_cast<int>(r23 * t1);
+    t2 = j;
+    z = t1 - t23 * t2;
+    t3 = t23 * z + a2 * x2;
+    j = static_cast<int>(r46 * t3);
+    t4 = j;
+    *x = t3 - t46 * t4;
+    return r46 * (*x);
+}
+
+constexpr int64_t convert_real_to_int(const double x, const int64_t power2) noexcept {
     return static_cast<int64_t>(power2 * x);
 }
 
 SparseMatrix::SparseMatrix(const Problem& params) 
     : params_(params)
 {
-    // Set sizes based on problem parameters
-    auto na = params_.na;
-    auto nz = na * (params_.nonzer + 1) * (params_.nonzer + 1);
+    const auto na = params_.na;
+    const auto nz = na * (params_.nonzer + 1) * (params_.nonzer + 1);
     
-    // Initialize matrix and vector data structures
     a_.resize(nz);
     colidx_.resize(nz);
     rowstr_.resize(na + 1);
     
-    x_.resize(na + 2, 1.0);  // Initialize to 1.0
-    z_.resize(na + 2, 0.0);
-    p_.resize(na + 2, 0.0);
-    q_.resize(na + 2, 0.0);
-    r_.resize(na + 2, 0.0);
+    x_.resize(na + 2);
+    z_.resize(na + 2);
+    p_.resize(na + 2);
+    q_.resize(na + 2);
+    r_.resize(na + 2);
     
-    // Create the sparse matrix
     make_matrix();
 }
 
 double SparseMatrix::run_benchmark(npb::utils::TimerManager& timer) {
-    // Initialize vectors
-    std::fill(x_.begin(), x_.end(), 1.0);
-    std::fill(z_.begin(), z_.end(), 0.0);
-    std::fill(p_.begin(), p_.end(), 0.0);
-    std::fill(q_.begin(), q_.end(), 0.0);
-    std::fill(r_.begin(), r_.end(), 0.0);
-    
-    // Do one iteration untimed to initialize data
-    conjugate_gradient();
-    
-    // Reset for the actual benchmark
-    std::fill(x_.begin(), x_.end(), 1.0);
-    std::fill(z_.begin(), z_.end(), 0.0);
-    std::fill(p_.begin(), p_.end(), 0.0);
-    std::fill(q_.begin(), q_.end(), 0.0);
-    std::fill(r_.begin(), r_.end(), 0.0);
-    zeta_ = 0.0;  // Reset class member instead of creating a new local variable
-    
-    // Run main benchmark - using the passed timer
-    timer.start(npb::utils::TimerManager::T_BENCH);
-
     #ifdef _OPENMP
     omp_set_num_threads(params_.num_threads);
     #endif
     
-    for (int it = 1; it <= params_.max_iter; it++) {
-        timer.start(npb::utils::TimerManager::T_CONJ_GRAD);
-        double rnorm = conjugate_gradient();
-        timer.stop(npb::utils::TimerManager::T_CONJ_GRAD);
-        
-        // Calculate zeta
+    auto initialize_vectors = [this]() {
+        std::fill(x_.begin(), x_.begin() + params_.na + 1, 1.0);
+        std::fill_n(q_.begin(), params_.na, 0.0);
+        std::fill_n(z_.begin(), params_.na, 0.0);
+        std::fill_n(r_.begin(), params_.na, 0.0);
+        std::fill_n(p_.begin(), params_.na, 0.0);
+    };
+
+    auto compute_norms_and_normalize = [this]() -> std::pair<double, double> {
         double norm_temp1 = 0.0;
         double norm_temp2 = 0.0;
         
@@ -77,146 +102,171 @@ double SparseMatrix::run_benchmark(npb::utils::TimerManager& timer) {
             norm_temp2 += z_[j] * z_[j];
         }
         
-        norm_temp2 = 1.0 / std::sqrt(norm_temp2);
-        zeta_ = params_.shift + 1.0 / norm_temp1;  // Update class member
+        const double norm_factor = 1.0 / std::sqrt(norm_temp2);
         
-        // Print iteration info
-        if (it == 1) {
-            std::cout << "\n   iteration           ||r||                 zeta\n";
-        }
-        std::cout << "    " << std::setw(5) << it << "       " 
-                  << std::setw(20) << std::scientific << std::setprecision(14) << rnorm
-                  << std::setw(20) << std::scientific << std::setprecision(13) << zeta_ << "\n";
-        
-        // Normalize z to obtain x
         for (int64_t j = 0; j < params_.na; j++) {
-            x_[j] = norm_temp2 * z_[j];
+            x_[j] = norm_factor * z_[j];
+        }
+        
+        return {norm_temp1, norm_factor};
+    };
+    
+    #pragma omp parallel
+    {
+        initialize_vectors();
+        
+        #pragma omp single
+        zeta_ = 0.0;
+
+        conjugate_gradient();
+        
+        #pragma omp single
+        compute_norms_and_normalize();
+
+        initialize_vectors();
+
+        #pragma omp single
+        zeta_ = 0.0;
+        
+        for (int it = 1; it <= params_.max_iter; it++) {
+            timer.start(npb::utils::TimerManager::T_CONJ_GRAD);
+            const double rnorm = conjugate_gradient();
+            timer.stop(npb::utils::TimerManager::T_CONJ_GRAD);
+
+            #pragma omp single
+            {
+                const auto [norm_temp1, norm_factor] = compute_norms_and_normalize();
+                zeta_ = params_.shift + 1.0 / norm_temp1;
+                
+                if (it == 1) {
+                    std::cout << "\n   iteration           ||r||                 zeta\n";
+                }
+                std::cout << "    " << std::setw(5) << it << "       " 
+                          << std::setw(20) << std::scientific << std::setprecision(14) << rnorm
+                          << std::setw(20) << std::scientific << std::setprecision(13) << zeta_ << "\n";
+            }
         }
     }
     
-    timer.stop(npb::utils::TimerManager::T_BENCH);
     return timer.read(npb::utils::TimerManager::T_BENCH);
 }
 
-double SparseMatrix::conjugate_gradient() {
-    constexpr int64_t cgitmax = 25; // Max CG iterations
+double SparseMatrix::conjugate_gradient() noexcept {
+    constexpr int64_t cgitmax = 25;
     
-    // Initialize the CG algorithm
-    std::fill(q_.begin(), q_.end(), 0.0);
-    std::fill(z_.begin(), z_.end(), 0.0);
+    static double d, sum, rho, rho0;
     
-    // Copy x to r for residual calculation
-    std::copy(x_.begin(), x_.end(), r_.begin());
-    std::copy(r_.begin(), r_.end(), p_.begin());
+    #pragma omp single nowait
+    {
+        rho = 0.0;
+        sum = 0.0;
+    }
     
-    // Calculate initial rho = r.r
-    double rho = 0.0;
-    // Use sequential calculation for initial rho to match reference implementation exactly
+    #pragma omp for
+    for (int64_t j = 0; j < params_.na + 1; j++) {
+        q_[j] = 0.0;
+        z_[j] = 0.0;
+        r_[j] = x_[j];
+        p_[j] = r_[j];
+    }
+    
+    #pragma omp for reduction(+:rho)
     for (int64_t j = 0; j < params_.na; j++) {
         rho += r_[j] * r_[j];
     }
     
-    // Main CG iteration loop
     for (int64_t cgit = 1; cgit <= cgitmax; cgit++) {
-        // q = A.p (sparse matrix-vector multiply)
-        #pragma omp parallel for schedule(static)
-        for (int64_t j = 0; j < params_.na; j++) {
-            double sum = 0.0;
-            for (int64_t k = rowstr_[j]; k < rowstr_[j+1]; k++) {
-                sum += a_[k] * p_[colidx_[k]];
-            }
-            q_[j] = sum;
+        #pragma omp single nowait
+        {
+            d = 0.0;
+            rho0 = rho;
+            rho = 0.0;
         }
         
-        // Calculate d = p.q
-        double d = 0.0;
-        #pragma omp parallel for reduction(+:d) schedule(static)
+        #pragma omp for nowait schedule(static)
+        for (int64_t j = 0; j < params_.na; j++) {
+            double suml = 0.0;
+            const auto row_start = rowstr_[j];
+            const auto row_end = rowstr_[j+1];
+            
+            for (int64_t k = row_start; k < row_end; k++) {
+                suml += a_[k] * p_[colidx_[k]];
+            }
+            q_[j] = suml;
+        }
+        
+        #pragma omp for reduction(+:d) schedule(static)
         for (int64_t j = 0; j < params_.na; j++) {
             d += p_[j] * q_[j];
         }
         
-        // Calculate alpha = rho / d
-        double alpha = rho / d;
+        const double alpha = rho0 / d;
         
-        // Save current rho
-        double rho0 = rho;
-        
-        // Update z and r, recalculate rho
-        rho = 0.0;
-        #pragma omp parallel for reduction(+:rho) schedule(static)
+        #pragma omp for reduction(+:rho) schedule(static)
         for (int64_t j = 0; j < params_.na; j++) {
             z_[j] += alpha * p_[j];
             r_[j] -= alpha * q_[j];
             rho += r_[j] * r_[j];
         }
         
-        // Calculate beta = rho / rho0
-        double beta = rho / rho0;
+        const double beta = rho / rho0;
         
-        // Update p = r + beta*p
-        #pragma omp parallel for schedule(static)
+        #pragma omp for schedule(static)
         for (int64_t j = 0; j < params_.na; j++) {
             p_[j] = r_[j] + beta * p_[j];
         }
     }
     
-    // Compute residual norm explicitly: ||r|| = ||x - A.z||
-    // First, form A.z
-    #pragma omp parallel for
+    #pragma omp for nowait schedule(static)
     for (int64_t j = 0; j < params_.na; j++) {
-        double sum = 0.0;
-        for (int64_t k = rowstr_[j]; k < rowstr_[j+1]; k++) {
-            sum += a_[k] * z_[colidx_[k]];
+        double suml = 0.0;
+        const auto row_start = rowstr_[j];
+        const auto row_end = rowstr_[j+1];
+        
+        for (int64_t k = row_start; k < row_end; k++) {
+            suml += a_[k] * z_[colidx_[k]];
         }
-        r_[j] = sum;
+        r_[j] = suml;
     }
     
-    // Calculate ||x - A.z||
-    double sum = 0.0;
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp for reduction(+:sum) schedule(static)
     for (int64_t j = 0; j < params_.na; j++) {
-        double d = x_[j] - r_[j];
-        sum += d * d;
+        const double suml = x_[j] - r_[j];
+        sum += suml * suml;
     }
     
-    return std::sqrt(sum);
+    #pragma omp single
+    sum = std::sqrt(sum);
+    
+    return sum;
 }
 
 void SparseMatrix::make_matrix() {
-    // Initialize global variables for this method
-    int64_t nz = params_.na * (params_.nonzer + 1) * (params_.nonzer + 1);
-    int64_t firstrow = 0;
-    int64_t lastrow = params_.na - 1;
-    int64_t firstcol = 0;
-    int64_t lastcol = params_.na - 1;
+    const auto nz = params_.na * (params_.nonzer + 1) * (params_.nonzer + 1);
+    constexpr int64_t firstrow = 0;
+    const int64_t lastrow = params_.na - 1;
+    constexpr int64_t firstcol = 0;
+    const int64_t lastcol = params_.na - 1;
     
-    // Generate random matrix with prescribed sparsity pattern
     std::vector<int64_t> arow(params_.na);
     std::vector<std::vector<int64_t>> acol(params_.na, std::vector<int64_t>(params_.nonzer + 1));
     std::vector<std::vector<double>> aelt(params_.na, std::vector<double>(params_.nonzer + 1));
     std::vector<int64_t> iv(params_.na);
     
-    // Random number generator state
-    double tran = 314159265.0;
-    double amult = 1220703125.0;
+    [[maybe_unused]] const double zeta_local = randlc(&tran, amult);
     
-    // Find smallest power of 2 not less than n
     int64_t nn1 = 1;
     while (nn1 < params_.na) {
         nn1 *= 2;
     }
     
-    // Generate nonzero positions for the sparse matrix
     for (int64_t iouter = 0; iouter < params_.na; iouter++) {
         int64_t nzv = params_.nonzer;
         
-        // Generate a sparse vector with nzv nonzeros
         std::vector<double> vc(params_.nonzer + 1);
         std::vector<int64_t> ivc(params_.nonzer + 1);
         
         generate_sparse_vector(params_.na, nzv, nn1, vc, ivc);
-        
-        // Set iouter+1 element to 0.5
         vector_set(params_.na, vc, ivc, &nzv, iouter + 1, 0.5);
         
         arow[iouter] = nzv;
@@ -226,7 +276,6 @@ void SparseMatrix::make_matrix() {
         }
     }
     
-    // Assemble the sparse matrix from the elements
     std::vector<int64_t> nzloc(params_.na);
     sparse_matrix_assembly(
         a_, colidx_, rowstr_,
@@ -237,10 +286,12 @@ void SparseMatrix::make_matrix() {
         params_.rcond, params_.shift
     );
     
-    // Adjust column indices for local indexing
-    for (int64_t j = 0; j < lastrow - firstrow + 1; j++) {
-        for (int64_t k = rowstr_[j]; k < rowstr_[j+1]; k++) {
-            colidx_[k] = colidx_[k] - firstcol;
+    const auto adjustment_range = lastrow - firstrow + 1;
+    for (int64_t j = 0; j < adjustment_range; j++) {
+        const auto row_start = rowstr_[j];
+        const auto row_end = rowstr_[j+1];
+        for (int64_t k = row_start; k < row_end; k++) {
+            colidx_[k] -= firstcol;
         }
     }
 }
@@ -249,71 +300,66 @@ void SparseMatrix::sparse_matrix_assembly(
     std::vector<double>& a, 
     std::vector<int64_t>& colidx, 
     std::vector<int64_t>& rowstr,
-    int64_t n, int64_t nz, int64_t nozer,
+    const int64_t n, const int64_t nz, [[maybe_unused]] const int64_t nozer,
     const std::vector<int64_t>& arow,
     const std::vector<std::vector<int64_t>>& acol,
     const std::vector<std::vector<double>>& aelt,
-    int64_t firstrow, int64_t lastrow,
+    const int64_t firstrow, const int64_t lastrow,
     std::vector<int64_t>& nzloc,
-    double rcond, double shift
+    const double rcond, const double shift
 ) {
-    int64_t nrows = lastrow - firstrow + 1;
+    const int64_t nrows = lastrow - firstrow + 1;
     
-    // Initialize rowstr and nzloc
-    std::fill(rowstr.begin(), rowstr.begin() + nrows + 1, 0);
-    std::fill(nzloc.begin(), nzloc.begin() + nrows, 0);
+    std::fill_n(rowstr.begin(), nrows + 1, 0);
     
-    // Count the number of triples in each row
     for (int64_t i = 0; i < n; i++) {
         for (int64_t nza = 0; nza < arow[i]; nza++) {
-            int64_t j = acol[i][nza] + 1;
+            const int64_t j = acol[i][nza] + 1;
             rowstr[j] += arow[i];
         }
     }
     
-    // Cumulative sum to get rowstr values
     rowstr[0] = 0;
     for (int64_t j = 1; j < nrows + 1; j++) {
         rowstr[j] += rowstr[j-1];
     }
+    const int64_t nza_final = rowstr[nrows] - 1;
     
-    int64_t nza = rowstr[nrows] - 1;
-    if (nza > nz) {
-        throw std::runtime_error("Space for matrix elements exceeded in sparse");
+    if (nza_final > nz) {
+        throw std::runtime_error("Space for matrix elements exceeded in sparse assembly");
     }
     
-    // Initialize a and colidx (using nz instead of nrows)
-    std::fill(a.begin(), a.begin() + nza + 1, 0.0);
-    std::fill(colidx.begin(), colidx.begin() + nza + 1, -1);
+    for (int64_t j = 0; j < nrows; j++) {
+        const auto row_start = rowstr[j];
+        const auto row_end = rowstr[j+1];
+        std::fill(a.begin() + row_start, a.begin() + row_end, 0.0);
+        std::fill(colidx.begin() + row_start, colidx.begin() + row_end, -1);
+        nzloc[j] = 0;
+    }
     
-    // Generate the sparse matrix by summing elements with same indices
     double size = 1.0;
-    double ratio = std::pow(rcond, (1.0 / static_cast<double>(n)));
+    const double ratio = std::pow(rcond, 1.0 / static_cast<double>(n));
     
     for (int64_t i = 0; i < n; i++) {
         for (int64_t nza = 0; nza < arow[i]; nza++) {
-            int64_t j = acol[i][nza];
+            const int64_t j = acol[i][nza];
+            const double scale = size * aelt[i][nza];
             
-            // Process each element of the sparse matrix
-            double scale = size * aelt[i][nza];
             for (int64_t nzrow = 0; nzrow < arow[i]; nzrow++) {
-                int64_t jcol = acol[i][nzrow];
-                double val = aelt[i][nzrow] * scale;
+                const int64_t jcol = acol[i][nzrow];
+                double va = aelt[i][nzrow] * scale;
                 
-                // Add identity * rcond to bound eigenvalues from below
                 if (jcol == j && j == i) {
-                    val += rcond - shift;
+                    va += rcond - shift;
                 }
                 
-                // Find position for this element in the matrix
                 bool inserted = false;
-                int64_t k = 0; // Declare k outside the loop so it stays in scope
-
+                int64_t k;
+                
                 for (k = rowstr[j]; k < rowstr[j+1]; k++) {
                     if (colidx[k] > jcol) {
-                        // Insert in order - make sure we don't go out of bounds
-                        for (int64_t kk = rowstr[j+1] - 2; kk >= k && kk >= 0; kk--) {
-                            if (colidx[kk] > -1 && kk+1 < a.size()) {
+                        for (int64_t kk = rowstr[j+1]-2; kk >= k; kk--) {
+                            if (colidx[kk] > -1) {
                                 a[kk+1] = a[kk];
                                 colidx[kk+1] = colidx[kk];
                             }
@@ -323,41 +369,33 @@ void SparseMatrix::sparse_matrix_assembly(
                         inserted = true;
                         break;
                     } else if (colidx[k] == -1) {
-                        // Fill empty spot
                         colidx[k] = jcol;
                         inserted = true;
                         break;
                     } else if (colidx[k] == jcol) {
-                        // Already exists, mark as duplicate
                         nzloc[j]++;
                         inserted = true;
                         break;
                     }
                 }
-
+                
                 if (!inserted) {
-                    throw std::runtime_error("Internal error in sparse matrix assembly");
+                    throw std::runtime_error("Internal error in sparse assembly at i=" + std::to_string(i));
                 }
-
-                // Add the value to the element
-                if (colidx[k] == jcol) {
-                    a[k] += val;
-                }
+                
+                a[k] += va;
             }
         }
-        
-        // Scale for next iteration
         size *= ratio;
     }
     
-    // Remove duplicates and create final sparse matrix
     for (int64_t j = 1; j < nrows; j++) {
         nzloc[j] += nzloc[j-1];
     }
     
     for (int64_t j = 0; j < nrows; j++) {
-        int64_t j1 = (j > 0) ? rowstr[j] - nzloc[j-1] : 0;
-        int64_t j2 = rowstr[j+1] - nzloc[j];
+        const int64_t j1 = (j > 0) ? rowstr[j] - nzloc[j-1] : 0;
+        const int64_t j2 = rowstr[j+1] - nzloc[j];
         int64_t nza = rowstr[j];
         
         for (int64_t k = j1; k < j2; k++) {
@@ -367,45 +405,32 @@ void SparseMatrix::sparse_matrix_assembly(
         }
     }
     
-    // Adjust rowstr to account for removed duplicates
     for (int64_t j = 1; j < nrows + 1; j++) {
-        rowstr[j] = rowstr[j] - nzloc[j-1];
+        rowstr[j] -= nzloc[j-1];
     }
 }
 
 void SparseMatrix::generate_sparse_vector(
-    int64_t n, int64_t nz, int64_t nn1,
+    const int64_t n, const int64_t nz, const int64_t nn1,
     std::vector<double>& v, 
     std::vector<int64_t>& iv
-) {
-    // Random number generator state
-    static double tran = 314159265.0;
-    static double amult = 1220703125.0;
-    
+) noexcept {
     int64_t nzv = 0;
     
     while (nzv < nz) {
-        // Generate random value
-        double vecelt = npb::utils::RandomGenerator::randlc(&tran, amult);
-        
-        // Generate random position (an integer between 1 and n)
-        double vecloc = npb::utils::RandomGenerator::randlc(&tran, amult);
-        int64_t i = convert_real_to_int(vecloc, nn1) + 1;
+        const double vecelt = randlc(&tran, amult);
+        const double vecloc = randlc(&tran, amult);
+        const int64_t i = convert_real_to_int(vecloc, nn1) + 1;
         
         if (i > n) continue;
         
-        // Check if this position was already generated
-        bool already_generated = false;
-        for (int64_t ii = 0; ii < nzv; ii++) {
-            if (iv[ii] == i) {
-                already_generated = true;
-                break;
-            }
-        }
+        const bool already_exists = std::any_of(
+            iv.begin(), iv.begin() + nzv,
+            [i](const int64_t existing) { return existing == i; }
+        );
         
-        if (already_generated) continue;
+        if (already_exists) continue;
         
-        // Add to the vector
         v[nzv] = vecelt;
         iv[nzv] = i;
         nzv++;
@@ -413,25 +438,19 @@ void SparseMatrix::generate_sparse_vector(
 }
 
 void SparseMatrix::vector_set(
-    int64_t n, 
+    [[maybe_unused]] const int64_t n, 
     std::vector<double>& v, 
     std::vector<int64_t>& iv, 
     int64_t* nzv, 
-    int64_t i, 
-    double val
-) {
-    // Check if position i is already in the vector
-    bool set = false;
-    for (int64_t k = 0; k < *nzv; k++) {
-        if (iv[k] == i) {
-            v[k] = val;
-            set = true;
-            break;
-        }
-    }
+    const int64_t i, 
+    const double val
+) noexcept {
+    const auto it = std::find(iv.begin(), iv.begin() + *nzv, i);
     
-    // If not found, add it
-    if (!set) {
+    if (it != iv.begin() + *nzv) {
+        const auto index = std::distance(iv.begin(), it);
+        v[index] = val;
+    } else {
         v[*nzv] = val;
         iv[*nzv] = i;
         (*nzv)++;
@@ -451,7 +470,7 @@ double SparseMatrix::get_zeta_verify_value() const noexcept {
     }
 }
 
-double SparseMatrix::get_mflops(double execution_time) const noexcept {
+double SparseMatrix::get_mflops(const double execution_time) const noexcept {
     if (execution_time == 0.0) {
         return 0.0;
     }
@@ -469,8 +488,8 @@ bool SparseMatrix::verify() const noexcept {
         return false;
     }
     
-    double zeta_verify_value = get_zeta_verify_value();
-    double err = std::abs((zeta_ - zeta_verify_value) / zeta_verify_value);
+    const double zeta_verify_value = get_zeta_verify_value();
+    const double err = std::abs((zeta_ - zeta_verify_value) / zeta_verify_value);
     
     return (err <= epsilon);
 }

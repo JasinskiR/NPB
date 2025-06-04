@@ -94,7 +94,7 @@ private:
         int64_t n, int64_t nz, int64_t nn1,
         std::vector<double>& v, 
         std::vector<int64_t>& iv
-    );
+    ) noexcept;
     
     void vector_set(
         int64_t n, 
@@ -103,13 +103,13 @@ private:
         int64_t* nzv, 
         int64_t i, 
         double val
-    );
+    ) noexcept;
     
     // Core algorithm
-    double conjugate_gradient();
+    double conjugate_gradient() noexcept;
 };
 
 // Helper functions
-int64_t convert_real_to_int(double x, int64_t power2);
+constexpr int64_t convert_real_to_int(double x, int64_t power2) noexcept;
 
 } // namespace npb::cg

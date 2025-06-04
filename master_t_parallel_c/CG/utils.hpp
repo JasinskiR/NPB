@@ -17,101 +17,113 @@
 namespace npb {
 namespace utils {
 
-// Get number of threads from environment or use hardware concurrency
 inline int get_num_threads() {
     int num_threads = 0;
     
-    // Check for NPB_NUM_THREADS environment variable
     if (const char* env_threads = std::getenv("NPB_NUM_THREADS")) {
         num_threads = std::atoi(env_threads);
     }
     
-    // If not set or invalid, check for OMP_NUM_THREADS
     if (num_threads <= 0) {
         if (const char* env_threads = std::getenv("OMP_NUM_THREADS")) {
             num_threads = std::atoi(env_threads);
         }
     }
     
-    // If still not set or invalid, use hardware concurrency
     if (num_threads <= 0) {
         num_threads = std::thread::hardware_concurrency();
     }
     
-    // Fallback to 1 if all else fails
     return num_threads > 0 ? num_threads : 1;
 }
 
-// Random number generator with same properties as original NPB
 class RandomGenerator {
 public:
-    static constexpr double r23 = 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 
-                              0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5 * 0.5;
-    static constexpr double r46 = r23 * r23;
-    static constexpr double t23 = 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 
-                              2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0 * 2.0;
-    static constexpr double t46 = t23 * t23;
-
-    // Generate a random number using the linear congruential generator
     static double randlc(double* x, double a) {
+        static bool initialized = false;
+        static double r23, r46, t23, t46;
+        
+        if (!initialized) {
+            r23 = 1.0;
+            r46 = 1.0;
+            t23 = 1.0;
+            t46 = 1.0;
+            
+            for (int i = 1; i <= 23; i++) {
+                r23 = 0.50 * r23;
+                t23 = 2.0 * t23;
+            }
+            for (int i = 1; i <= 46; i++) {
+                r46 = 0.50 * r46;
+                t46 = 2.0 * t46;
+            }
+            initialized = true;
+        }
+        
         double t1, t2, t3, t4, a1, a2, x1, x2, z;
-
-        // Break A into two parts such that A = 2^23 * A1 + A2
+        
         t1 = r23 * a;
         a1 = static_cast<int>(t1);
         a2 = a - t23 * a1;
-
-        // Break X into two parts such that X = 2^23 * X1 + X2
+        
         t1 = r23 * (*x);
         x1 = static_cast<int>(t1);
         x2 = (*x) - t23 * x1;
-        
-        // Compute Z = A1 * X2 + A2 * X1 (mod 2^23)
         t1 = a1 * x2 + a2 * x1;
+        
         t2 = static_cast<int>(r23 * t1);
         z = t1 - t23 * t2;
-        
-        // Compute X = 2^23 * Z + A2 * X2 (mod 2^46)
         t3 = t23 * z + a2 * x2;
         t4 = static_cast<int>(r46 * t3);
         (*x) = t3 - t46 * t4;
-
-        return (r46 * (*x));
+        
+        return r46 * (*x);
     }
 
-    // Generate N random numbers
     static void vranlc(int n, double* x_seed, double a, std::span<double> y) {
+        static bool initialized = false;
+        static double r23, r46, t23, t46;
+        
+        if (!initialized) {
+            r23 = 1.0;
+            r46 = 1.0;
+            t23 = 1.0;
+            t46 = 1.0;
+            
+            for (int i = 1; i <= 23; i++) {
+                r23 = 0.50 * r23;
+                t23 = 2.0 * t23;
+            }
+            for (int i = 1; i <= 46; i++) {
+                r46 = 0.50 * r46;
+                t46 = 2.0 * t46;
+            }
+            initialized = true;
+        }
+        
         double x, t1, t2, t3, t4, a1, a2, x1, x2, z;
 
-        // Break A into two parts such that A = 2^23 * A1 + A2
         t1 = r23 * a;
         a1 = static_cast<int>(t1);
         a2 = a - t23 * a1;
         x = *x_seed;
 
         for(int i = 0; i < n; i++) {
-            // Break X into two parts such that X = 2^23 * X1 + X2
             t1 = r23 * x;
             x1 = static_cast<int>(t1);
             x2 = x - t23 * x1;
-            
-            // Compute Z = A1 * X2 + A2 * X1 (mod 2^23)
             t1 = a1 * x2 + a2 * x1;
             t2 = static_cast<int>(r23 * t1);
             z = t1 - t23 * t2;
-            
-            // Compute X = 2^23 * Z + A2 * X2 (mod 2^46)
             t3 = t23 * z + a2 * x2;
             t4 = static_cast<int>(r46 * t3);
             x = t3 - t46 * t4;
-            
             y[i] = r46 * x;
         }
         *x_seed = x;
     }
 };
 
-// High-resolution timer
 class Timer {
     public:
         Timer() {
@@ -161,6 +173,7 @@ class Timer {
         int64_t elapsed_ns_{0};
         bool running_{false};
     };
+    
     class TimerManager {
         public:
             enum TimerID {
@@ -215,7 +228,6 @@ class Timer {
             bool enabled_{false};
         };
 
-// Function to print benchmark results
 void print_results(
     const std::string& name,
     char class_type,
@@ -233,7 +245,6 @@ void print_results(
     const std::vector<double>& timers = {}
 );
 
-// Templated utility functions for parallel operations
 template <std::floating_point T, typename Func>
 T parallel_sum(std::span<const T> data, Func transform) {
     const size_t hardware_threads = get_num_threads();
