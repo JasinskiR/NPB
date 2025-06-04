@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c -isystem /opt/homebrew/opt/libomp/include
+CXX_INCLUDES = -I/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/CG -isystem /opt/homebrew/opt/libomp/include
 
 CXX_FLAGSarm64 =  -Xpreprocessor -fopenmp -std=c++2b -arch arm64 -O0 -march=native
 

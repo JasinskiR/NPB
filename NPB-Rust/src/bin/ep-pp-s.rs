@@ -3,7 +3,7 @@ const CLASS: &str= "s";
 const M: u32 = 24;
 const MM: u32 = M - MK;
 const NN: u32 = 1 << MM;
-const COMPILETIME: &str = "2025-05-16T17:47:50.067794+02:00";
+const COMPILETIME: &str = "2025-06-02T20:12:44.797708+02:00";
 const NPBVERSION: &str = "4.1";
 const COMPILERVERSION: &str = "13.0.0";
 const LIBVERSION: &str = "1.0";
@@ -26,13 +26,37 @@ use std::ptr;
 use rayon::prelude::*;
 use std::env;
 use chrono::{Local, DateTime};
+use std::cell::RefCell;
+use std::thread_local;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+// Use thread_local! for the large temporary buffer
+thread_local! {
+    static THREAD_X: RefCell<Vec<f64>> = RefCell::new(vec![0.0; NK_PLUS]);
+}
 
 //BEGINNING OF EP
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let NUM_THREADS: usize = args[1].parse::<usize>().unwrap();
+    
+    // Get thread count from second argument (if provided)
+    let num_threads: usize = args.get(2)
+        .map(|s| s.parse::<usize>().unwrap_or_else(|_| {
+            eprintln!("Invalid thread count, using default: 1");
+            1
+        }))
+        .unwrap_or_else(|| {
+            eprintln!("No thread count specified, using default: 1");
+            1
+        });
 
-    rayon::ThreadPoolBuilder::new().num_threads(NUM_THREADS).build_global().unwrap();
+    println!(" Using {} threads", num_threads);
+
+    if let Err(e) = rayon::ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build_global() {
+        eprintln!("Failed to build thread pool: {}, using default configuration", e);
+    }
 
     // Integer Variables
     let np: i32 = NN as i32;
@@ -83,21 +107,29 @@ fn main() {
 
     an = t1;
     gc = 0.0;
-    let result:(f64,f64,Vec<u32>) = (1..np+1).into_par_iter().fold(||(0.0,0.0,vec![0;(NQ)as usize]),|mut tupl, k| {
+
+    // Dynamically determine chunk size based on problem size and thread count
+    let chunk_size = ((np as usize) / (num_threads * 4)).max(1);
+
+    // Use atomic counters for the histogram array to minimize synchronization
+    let atomic_counts = (0..NQ as usize)
+        .map(|_| AtomicUsize::new(0))
+        .collect::<Vec<_>>();
+
+    let result = (1..np+1)
+        .collect::<Vec<_>>()
+        .par_chunks(chunk_size)
+        .fold(|| (0.0, 0.0), |mut acc, chunk| {
+            for &k in chunk {
                 let mut t1 = S;
                 let mut t2 = an;
-                let mut t3:f64;
-                let mut t4:f64;
-                let mut ik;
-                let mut l;
-                let mut loc_sx = 0.0;
-                let mut loc_sy = 0.0;
-                let mut x = vec![0.0;NK_PLUS];
-                let mut x1:f64;
-                let mut x2:f64;
+                let mut t3: f64;
+                let mut t4: f64;
+                let mut ik: i32;
+                let mut l: usize; // Add this type annotation
                 let k_offset = -1;
                 let mut kk = k_offset + k;
-                let mut aux:f64;
+                let mut aux: f64;
                 for _i in 1..=100 {
                         ik = kk / 2;
                         if (2 * ik) != kk {
@@ -110,35 +142,69 @@ fn main() {
                         t3 = randdp::randlc(&mut t2, aux);
                         kk = ik;
                     }
-                randdp::vranlc((2 * NK) as i32, &mut t1, A, &mut x);
-                for i in 0..NK {
-                    x1 = 2.0 * x[2 * i] - 1.0;
-                    x2 = 2.0 * x[2 * i + 1] - 1.0;
-                    t1 = f64::powi(x1, 2) + f64::powi(x2, 2);
-                    if t1 <= 1.0 {
-                        t2 = (-2.0 * t1.ln() / t1).sqrt();//(-2.0 * t1.log(2.0) / t1).sqrt();
-                        t3 = x1 * t2;
-                        t4 = x2 * t2;
-                        l = t3.abs().max(t4.abs()) as usize;
-                        tupl.2[l] += 1;
-                        tupl.0 += t3;
-                        tupl.1 += t4;
+                THREAD_X.with(|x_cell| {
+                    let mut x = x_cell.borrow_mut();
+                    randdp::vranlc((2 * NK) as i32, &mut t1, A, &mut x);
+                    
+                    // Increase chunk size for better vectorization potential
+                    const CHUNK_SIZE: usize = 128; 
+                    for chunk_start in (0..NK).step_by(CHUNK_SIZE) {
+                        let chunk_end = (chunk_start + CHUNK_SIZE).min(NK);
+                        
+                        // Pre-allocate variables to help compiler optimize
+                        let mut sum_x = 0.0;
+                        let mut sum_y = 0.0;
+                        let mut local_counts = [0usize; NQ as usize];
+                        
+                        for i in chunk_start..chunk_end {
+                            let x1 = 2.0 * x[2 * i] - 1.0;
+                            let x2 = 2.0 * x[2 * i + 1] - 1.0;
+                            let t1 = x1 * x1 + x2 * x2;
+                            
+                            if t1 <= 1.0 {
+                                let t2 = (-2.0 * t1.ln() / t1).sqrt();
+                                let t3 = x1 * t2;
+                                let t4 = x2 * t2;
+                                let l = t3.abs().max(t4.abs()) as usize;
+                                
+                                if l < NQ as usize {
+                                    local_counts[l] += 1;
+                                    sum_x += t3;
+                                    sum_y += t4;
+                                }
+                            }
+                        }
+                        
+                        // Accumulate results
+                        acc.0 += sum_x;
+                        acc.1 += sum_y;
+                        
+                        // Update atomic counters only once per chunk
+                        for (i, count) in local_counts.iter().enumerate() {
+                            if *count > 0 && i < atomic_counts.len() {
+                                atomic_counts[i].fetch_add(*count, Ordering::Relaxed);
+                            }
+                        }
                     }
-                }
-                tupl
-            }).reduce_with(|mut tupl1, tup|{
-                tupl1.0 += tup.0;
-                tupl1.1 += tup.1;
-                for i in 0..(NQ-1) as usize{
-                    tupl1.2[i] += tup.2[i];
-                }
-                tupl1
-            }).unwrap();
+                });
+            }
+            acc
+        })
+        .reduce(|| (0.0, 0.0), |mut acc1, acc2| {
+            acc1.0 += acc2.0;
+            acc1.1 += acc2.1;
+            acc1
+        });
+
+    // Convert atomic counts to a regular vector
+    let counts = atomic_counts.iter()
+        .map(|atomic| atomic.load(Ordering::Relaxed))
+        .collect::<Vec<_>>();
 
     sx = result.0;
     sy = result.1;
 
-    for item in (result.2).iter().take((NQ-1) as usize + 1){
+    for item in counts.iter().take((NQ-1) as usize + 1){
         gc += *item as f64;
     }
 
@@ -148,29 +214,29 @@ fn main() {
     verified = true;
 
     if M == 24 {
-		sx_verify_value = -3.247_834_652_034_74e3;
-		sy_verify_value = -6.958_407_078_382_297e3;
-	}else if M == 25 {
-		sx_verify_value = -2.863_319_731_645_753e3;
-		sy_verify_value = -6.320_053_679_109_499e3;
-	}else if M == 28 {
-		sx_verify_value = -4.295_875_165_629_892e3;
-		sy_verify_value = -1.580_732_573_678_431e4;
-	}else if M == 30 {
-		sx_verify_value =  4.033_815_542_441_498e4;
-		sy_verify_value = -2.660_669_192_809_235e4;
-	}else if M == 32 {
-		sx_verify_value =  4.764_367_927_995_374e4;
-		sy_verify_value = -8.084_072_988_043_731e4;
-	}else if M == 36 {
-		sx_verify_value =  1.982_481_200_946_593e5;
-		sy_verify_value = -1.020_596_636_361_769e5;
-	}else if  M == 40 {
-		sx_verify_value = -5.319_717_441_530e5;
-		sy_verify_value = -3.688_834_557_731e5;
-	}else {
-		verified = false;
-	}
+        sx_verify_value = -3.247_834_652_034_74e3;
+        sy_verify_value = -6.958_407_078_382_297e3;
+    }else if M == 25 {
+        sx_verify_value = -2.863_319_731_645_753e3;
+        sy_verify_value = -6.320_053_679_109_499e3;
+    }else if M == 28 {
+        sx_verify_value = -4.295_875_165_629_892e3;
+        sy_verify_value = -1.580_732_573_678_431e4;
+    }else if M == 30 {
+        sx_verify_value =  4.033_815_542_441_498e4;
+        sy_verify_value = -2.660_669_192_809_235e4;
+    }else if M == 32 {
+        sx_verify_value =  4.764_367_927_995_374e4;
+        sy_verify_value = -8.084_072_988_043_731e4;
+    }else if M == 36 {
+        sx_verify_value =  1.982_481_200_946_593e5;
+        sy_verify_value = -1.020_596_636_361_769e5;
+    }else if  M == 40 {
+        sx_verify_value = -5.319_717_441_530e5;
+        sy_verify_value = -3.688_834_557_731e5;
+    }else {
+        verified = false;
+    }
 
     if verified {
         sx_err = ((sx - sx_verify_value) / sx_verify_value).abs();
@@ -194,7 +260,7 @@ fn main() {
     println!(" Sums: sx = {:25.15e} sy = {:25.15e}", sx, sy); // %25.15e
     println!(" Counts: ");
     for i in 0..(NQ) as usize{  // Modified to include all counts
-        println!("{}     {}",i,result.2[i]);
+        println!("{}     {}",i,counts[i]);
     }
     print_results::rust_print_results("EP",
                         CLASS,
@@ -210,7 +276,7 @@ fn main() {
                         COMPILETIME,
                         COMPILERVERSION,
                         LIBVERSION,
-                        format!("{}", NUM_THREADS).as_str(),
+                        format!("{}", num_threads).as_str(), // Pass the actual thread count
                         "cs1",
                         "cs2",
                         "cs3",

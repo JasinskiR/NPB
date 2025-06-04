@@ -20,6 +20,22 @@ int main(int argc, char** argv) {
     int num_threads = npb::utils::get_num_threads();
     
     // Parse command line arguments if provided
+    if (argc >= 2) {
+        // Check if the first argument is a single character class identifier
+        if (strlen(argv[1]) == 1) {
+            char c = argv[1][0];
+            if (c == 'S' || c == 'W' || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E') {
+                problem_class = c;
+                
+                // If there's a second argument, treat it as thread count
+                if (argc >= 3 && isdigit(argv[2][0])) {
+                    num_threads = std::atoi(argv[2]);
+                }
+            }
+        }
+    }
+    
+    // Process additional options if present
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             // Process options
@@ -32,12 +48,9 @@ int main(int argc, char** argv) {
                 problem_class = argv[i+1][0];
                 i++; // Skip the next argument as it's the class value
             }
-        } else if (strlen(argv[i]) == 1) {
-            // Single letter is the problem class
-            char c = argv[i][0];
-            if (c == 'S' || c == 'W' || c == 'A' || c == 'B' || c == 'C' || c == 'D' || c == 'E') {
-                problem_class = c;
-            }
+        } else if (strlen(argv[i]) == 1 && i == 1) {
+            // Already handled above for the first argument
+            continue;
         } else if (strncmp(argv[i], "CLASS=", 6) == 0) {
             // Legacy style: CLASS=X
             problem_class = argv[i][6];

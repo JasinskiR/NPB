@@ -1,8 +1,8 @@
 //NPB SET_PARAMS GLOBAL VARIABLES
-const CLASS: &str= %% CLASS_NPB %%;
-const M: u32 = %% M %%;
-const MM: u32 = M - MK;
-const NN: u32 = 1 << MM;
+// const CLASS: &str= %% CLASS_NPB %%; // Will be determined at runtime
+// const M: u32 = %% M %%; // Will be determined at runtime
+// const MM: u32 = M - MK; // Will be calculated at runtime
+// const NN: u32 = 1 << MM; // Will be calculated at runtime
 const COMPILETIME: &str = %% COMPILE_TIME %%;
 const NPBVERSION: &str = "4.1";
 const COMPILERVERSION: &str = "13.0.0";
@@ -38,24 +38,59 @@ thread_local! {
 //BEGINNING OF EP
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let NUM_THREADS: usize = args.get(1)
-        .map(|s| s.parse::<usize>().unwrap_or_else(|_| {
-            eprintln!("Invalid thread count, using default: 1");
+
+    if args.len() < 3 {
+        eprintln!("Usage: {} <CLASS> <NUM_THREADS>", args.get(0).map_or("ep-pp", |s| s.as_str()));
+        eprintln!("Example: {} S 4", args.get(0).map_or("ep-pp", |s| s.as_str()));
+        eprintln!("Available classes: S, W, A, B, C, D, E");
+        std::process::exit(1);
+    }
+    
+    let class_arg = &args[1];
+    let class_npb: &str = class_arg.as_str();
+
+    let m_val: u32 = match class_npb.to_uppercase().as_str() {
+        "S" => 24,
+        "W" => 25,
+        "A" => 28,
+        "B" => 30,
+        "C" => 32,
+        "D" => 36,
+        "E" => 40,
+        _ => {
+            eprintln!("Invalid class: {}. Must be one of S, W, A, B, C, D, E.", class_npb);
+            std::process::exit(1);
+        }
+    };
+
+    let mm_val: u32 = m_val - MK;
+    let nn_val: u32 = 1 << mm_val;
+    
+    // Get thread count from third argument (args[2])
+    let num_threads: usize = args.get(2)
+        .map(|s| s.parse::<usize>().unwrap_or_else(|e| {
+            eprintln!("Invalid thread count '{}', using default: 1. Error: {}", s, e);
             1
         }))
         .unwrap_or_else(|| {
+            // This path should not be hit due to args.len() < 3 check, but as a fallback:
             eprintln!("No thread count specified, using default: 1");
             1
         });
 
+    println!(" NAS Parallel Benchmarks 4.1 Rust version - EP Benchmark");
+    println!(" Class = {}, M = {}", class_npb.to_uppercase(), m_val);
+    println!(" Number of random numbers generated: {}", nn_val);
+    println!(" Using {} threads", num_threads);
+
     if let Err(e) = rayon::ThreadPoolBuilder::new()
-        .num_threads(NUM_THREADS)
+        .num_threads(num_threads)
         .build_global() {
         eprintln!("Failed to build thread pool: {}, using default configuration", e);
     }
 
     // Integer Variables
-    let np: i32 = NN as i32;
+    let np: i32 = nn_val as i32; // Use nn_val
     // Double Variables
     let mut aux: f64;
     let mut t1: f64;
@@ -105,7 +140,7 @@ fn main() {
     gc = 0.0;
 
     // Dynamically determine chunk size based on problem size and thread count
-    let chunk_size = ((np as usize) / (NUM_THREADS * 4)).max(1);
+    let chunk_size = ((np as usize) / (num_threads * 4)).max(1);
 
     // Use atomic counters for the histogram array to minimize synchronization
     let atomic_counts = (0..NQ as usize)
@@ -209,30 +244,30 @@ fn main() {
     let nit = 0;
     verified = true;
 
-    if M == 24 {
-		sx_verify_value = -3.247_834_652_034_74e3;
-		sy_verify_value = -6.958_407_078_382_297e3;
-	}else if M == 25 {
-		sx_verify_value = -2.863_319_731_645_753e3;
-		sy_verify_value = -6.320_053_679_109_499e3;
-	}else if M == 28 {
-		sx_verify_value = -4.295_875_165_629_892e3;
-		sy_verify_value = -1.580_732_573_678_431e4;
-	}else if M == 30 {
-		sx_verify_value =  4.033_815_542_441_498e4;
-		sy_verify_value = -2.660_669_192_809_235e4;
-	}else if M == 32 {
-		sx_verify_value =  4.764_367_927_995_374e4;
-		sy_verify_value = -8.084_072_988_043_731e4;
-	}else if M == 36 {
-		sx_verify_value =  1.982_481_200_946_593e5;
-		sy_verify_value = -1.020_596_636_361_769e5;
-	}else if  M == 40 {
-		sx_verify_value = -5.319_717_441_530e5;
-		sy_verify_value = -3.688_834_557_731e5;
-	}else {
-		verified = false;
-	}
+    if m_val == 24 { // Use m_val
+        sx_verify_value = -3.247_834_652_034_74e3;
+        sy_verify_value = -6.958_407_078_382_297e3;
+    }else if m_val == 25 { // Use m_val
+        sx_verify_value = -2.863_319_731_645_753e3;
+        sy_verify_value = -6.320_053_679_109_499e3;
+    }else if m_val == 28 { // Use m_val
+        sx_verify_value = -4.295_875_165_629_892e3;
+        sy_verify_value = -1.580_732_573_678_431e4;
+    }else if m_val == 30 { // Use m_val
+        sx_verify_value =  4.033_815_542_441_498e4;
+        sy_verify_value = -2.660_669_192_809_235e4;
+    }else if m_val == 32 { // Use m_val
+        sx_verify_value =  4.764_367_927_995_374e4;
+        sy_verify_value = -8.084_072_988_043_731e4;
+    }else if m_val == 36 { // Use m_val
+        sx_verify_value =  1.982_481_200_946_593e5;
+        sy_verify_value = -1.020_596_636_361_769e5;
+    }else if  m_val == 40 { // Use m_val
+        sx_verify_value = -5.319_717_441_530e5;
+        sy_verify_value = -3.688_834_557_731e5;
+    }else {
+        verified = false; // Should not happen if class validation is correct
+    }
 
     if verified {
         sx_err = ((sx - sx_verify_value) / sx_verify_value).abs();
@@ -243,15 +278,15 @@ fn main() {
         println!("Something is wrong here!");
     }
 
-    let mops: f64 = (((1 as i64) << ((M as i64) + 1)) as f64) / tm / 1000000.0;
+    let mops: f64 = (((1 as i64) << ((m_val as i64) + 1)) as f64) / tm / 1000000.0; // Use m_val
 
     // Get current date and time for benchmark report
     let now: DateTime<Local> = Local::now();
     
-    println!(" EP Benchmark Results:\n");
+    println!("\n EP Benchmark Results:\n");
     println!(" Run on: {}", now.format("%Y-%m-%d %H:%M:%S"));
     println!(" CPU Time = {:.6} seconds", tm);
-    println!(" N = 2^{}", M);
+    println!(" N = 2^{}", m_val); // Use m_val
     println!(" No. Gaussian Pairs = {:>15}", gc);
     println!(" Sums: sx = {:25.15e} sy = {:25.15e}", sx, sy); // %25.15e
     println!(" Counts: ");
@@ -259,8 +294,8 @@ fn main() {
         println!("{}     {}",i,counts[i]);
     }
     print_results::rust_print_results("EP",
-                        CLASS,
-                        M+1,
+                        class_npb.to_uppercase().as_str(), // Use class_npb
+                        m_val + 1, // Use m_val
                         0,
                         0,
                         nit,
@@ -272,7 +307,7 @@ fn main() {
                         COMPILETIME,
                         COMPILERVERSION,
                         LIBVERSION,
-                        format!("{}", NUM_THREADS).as_str(),
+                        format!("{}", num_threads).as_str(), // Pass the actual thread count
                         "cs1",
                         "cs2",
                         "cs3",

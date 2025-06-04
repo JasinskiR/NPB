@@ -42,21 +42,44 @@ g++ -std=c++23 -O3 -march=native -fopenmp -o cg main.cpp cg.cpp utils.cpp
 
 ## Usage
 
+The executable is typically found in `./bin/cg` after compilation with CMake, or `./cg` if compiled manually as per the example.
+
+**Syntax:** `./bin/cg [CLASS] [NUM_THREADS]` (if using CMake build) or `./cg [CLASS] [NUM_THREADS]` (if manual build)
+
+-   `CLASS` (optional): The problem class (S, W, A, B, C, D, E).
+    -   If provided on the command line, it overrides any `CLASS` environment variable.
+    -   If not provided on the command line, the `CLASS` environment variable is checked.
+    -   If neither is set, defaults to 'A'.
+-   `NUM_THREADS` (optional): The number of OpenMP threads to use.
+    -   This argument is only considered if `CLASS` is also provided as the first command-line argument.
+    -   If provided and valid, this setting takes precedence over the `OMP_NUM_THREADS` environment variable.
+    -   If not provided on the command line or if the value is invalid, OpenMP will use the value of the `OMP_NUM_THREADS` environment variable, or the system default if `OMP_NUM_THREADS` is not set.
+
+**Examples:**
+
+Assume the executable is `./bin/cg`.
+
 ```bash
-# Run with default class A
-./cg
+# Run with default class A, default OpenMP threads
+./bin/cg
 
-# Run with a specific class
-./cg S
-./cg W
-./cg A
-./cg B
-./cg C
-./cg D
-./cg E
+# Run with class S, default OpenMP threads
+./bin/cg S
 
-# Alternatively, use the CLASS environment variable
-CLASS=B ./cg
+# Run with class A, using 4 OpenMP threads
+./bin/cg A 4
+
+# Run with class B (from env var), default OpenMP threads
+CLASS=B ./bin/cg
+
+# Run with class C (from command line, overrides env var if set), using 2 OpenMP threads
+CLASS=A ./bin/cg C 2
+
+# Run with class W, threads set by OMP_NUM_THREADS environment variable
+OMP_NUM_THREADS=8 ./bin/cg W
+
+# Run with class D, command-line threads override OMP_NUM_THREADS
+OMP_NUM_THREADS=8 ./bin/cg D 4 # Will use 4 threads
 ```
 
 ## Problem Classes

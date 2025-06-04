@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/build/cmake_install.cmake"
+		"/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/CG/build/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

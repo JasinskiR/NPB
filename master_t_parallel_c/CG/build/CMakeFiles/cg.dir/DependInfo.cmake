@@ -8,9 +8,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/cg.cpp" "CMakeFiles/cg.dir/cg.cpp.o" "gcc" "CMakeFiles/cg.dir/cg.cpp.o.d"
-  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/main.cpp" "CMakeFiles/cg.dir/main.cpp.o" "gcc" "CMakeFiles/cg.dir/main.cpp.o.d"
-  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/utils.cpp" "CMakeFiles/cg.dir/utils.cpp.o" "gcc" "CMakeFiles/cg.dir/utils.cpp.o.d"
+  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/CG/cg.cpp" "CMakeFiles/cg.dir/cg.cpp.o" "gcc" "CMakeFiles/cg.dir/cg.cpp.o.d"
+  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/CG/main.cpp" "CMakeFiles/cg.dir/main.cpp.o" "gcc" "CMakeFiles/cg.dir/main.cpp.o.d"
+  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/master_t_parallel_c/CG/utils.cpp" "CMakeFiles/cg.dir/utils.cpp.o" "gcc" "CMakeFiles/cg.dir/utils.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

@@ -60,10 +60,16 @@ fn write_ep_info(class_npb: &str) {
     let _ = bin_file.write_all(&contents.as_bytes());
 }
 
-fn write_ep_pp_info(class_npb: &str) {
-    let mut binding = fs::read_to_string(&format!("{}/ep-pp.rs", TEMPLATE_PATH)).expect("File");
+fn write_ep_pp_info(class_npb: &str) { // class_npb is kept for consistency but not used for M or CLASS in the template
+    let template_file_path = format!("{}/ep-pp.rs", TEMPLATE_PATH);
+    let mut binding = fs::read_to_string(&template_file_path)
+        .expect(&format!("Failed to read template file: {}", template_file_path));
     let mut contents: &str = binding.as_mut_str();
 
+    // M and CLASS_NPB are now determined at runtime in ep-pp.rs.
+    // We only need to replace COMPILE_TIME.
+    // The `m` variable calculation here is no longer needed for ep-pp template replacement.
+    /*
     let m: u32 = match class_npb {
         "s"=>24,
         "w"=>25,
@@ -74,18 +80,37 @@ fn write_ep_pp_info(class_npb: &str) {
         "e"=>40,
         _=>24
     };
+    */
 
     let compile_time = Local::now().to_rfc3339();
 
-    binding = contents.replace("%% CLASS_NPB %%", format!("\"{}\"", class_npb).as_str());
-    contents = binding.as_mut_str();
-    binding = contents.replace("%% M %%", format!("{}", m).as_str());
-    contents = binding.as_mut_str();
+    // Remove replacements for CLASS_NPB and M as they are handled at runtime in ep-pp.rs
+    // binding = contents.replace("%% CLASS_NPB %%", format!("\"{}\"", class_npb).as_str());
+    // contents = binding.as_mut_str();
+    // binding = contents.replace("%% M %%", format!("{}", m).as_str());
+    // contents = binding.as_mut_str();
+    
     binding = contents.replace("%% COMPILE_TIME %%", format!("\"{}\"", compile_time).as_str());
     contents = binding.as_mut_str();
 
-    let mut bin_file = File::create(format!("{}/ep-pp-{}.rs", &BIN_PATH, class_npb)).unwrap();
-    let _ = bin_file.write_all(&contents.as_bytes());
+    // Generate a single, generic ep-pp.rs in the bin directory.
+    // The class_npb argument to setparams for ep-pp will result in this generic binary.
+    let output_bin_filename = format!("{}/ep-pp.rs", &BIN_PATH);
+    match File::create(&output_bin_filename) {
+        Ok(mut bin_file) => {
+            if let Err(e) = bin_file.write_all(contents.as_bytes()) {
+                eprintln!("Error writing to {}: {}", output_bin_filename, e);
+            } else {
+                println!("Successfully generated generic EP-PP binary source: {}", output_bin_filename);
+                println!("To build and run (example):");
+                println!("  cargo build --release --bin ep-pp");
+                println!("  ./target/release/ep-pp S 4");
+            }
+        }
+        Err(e) => {
+            eprintln!("Error creating file {}: {}", output_bin_filename, e);
+        }
+    }
 }
 
 fn write_cg_info(class_npb: &str) {
@@ -219,10 +244,15 @@ fn write_cg_pp_info(class_npb: &str) {
     let _ = bin_file.write_all(&contents.as_bytes());
 }
 
-fn write_is_info(class_npb: &str) {
-    let mut binding = fs::read_to_string(&IS_TEMPLATEPATH).expect("File");
+fn write_is_info(class_npb: &str) { // class_npb is kept for consistency but not used for template replacement
+    let template_file_path = format!("{}/is.rs", TEMPLATE_PATH); // Ensure this template exists
+    let mut binding = fs::read_to_string(&template_file_path)
+        .expect(&format!("Failed to read template file: {}", template_file_path));
     let mut contents: &str = binding.as_mut_str();
 
+    // Class-specific parameters are now determined at runtime in is.rs.
+    // We only need to replace COMPILE_TIME.
+    /*
     let (total_keys_log_2, max_key_log_2, num_buckets_log_2) = match class_npb {
         "s" => (16, 11, 9),
         "w" => (20, 16, 10),
@@ -230,22 +260,40 @@ fn write_is_info(class_npb: &str) {
         "b" => (25, 21, 10),
         "c" => (27, 23, 10),
         "d" => (31, 27, 10),
-        _ => (16, 11, 9)
+        _ => (16, 11, 9) // Default or error
     };
+    */
 
     let compile_time = Local::now().to_rfc3339();
 
-    binding = contents.replace("%% CLASS_NPB %%", format!("\"{}\"", class_npb).as_str());
-    contents = binding.as_mut_str();
-    binding = contents.replace("%% TOTAL_KEYS_LOG_2 %%", format!("{}", total_keys_log_2).as_str());
-    contents = binding.as_mut_str();
-    binding = contents.replace("%% MAX_KEY_LOG_2 %%", format!("{}", max_key_log_2).as_str());
-    contents = binding.as_mut_str();
-    binding = contents.replace("%% NUM_BUCKETS_LOG_2 %%", format!("{}", num_buckets_log_2).as_str());
-    contents = binding.as_mut_str();
+    // Remove replacements for class-specific parameters
+    // binding = contents.replace("%% CLASS_NPB %%", format!("\"{}\"", class_npb).as_str());
+    // contents = binding.as_mut_str();
+    // binding = contents.replace("%% TOTAL_KEYS_LOG_2 %%", format!("{}", total_keys_log_2).as_str());
+    // contents = binding.as_mut_str();
+    // binding = contents.replace("%% MAX_KEY_LOG_2 %%", format!("{}", max_key_log_2).as_str());
+    // contents = binding.as_mut_str();
+    // binding = contents.replace("%% NUM_BUCKETS_LOG_2 %%", format!("{}", num_buckets_log_2).as_str());
+    // contents = binding.as_mut_str();
+    
     binding = contents.replace("%% COMPILE_TIME %%", format!("\"{}\"", compile_time).as_str());
     contents = binding.as_mut_str();
 
-    let mut bin_file = File::create(format!("{}/is-{}.rs", &BIN_PATH, class_npb)).unwrap();
-    let _ = bin_file.write_all(&contents.as_bytes());
+    // Generate a single, generic is.rs in the bin directory.
+    let output_bin_filename = format!("{}/is.rs", &BIN_PATH);
+    match File::create(&output_bin_filename) {
+        Ok(mut bin_file) => {
+            if let Err(e) = bin_file.write_all(contents.as_bytes()) {
+                eprintln!("Error writing to {}: {}", output_bin_filename, e);
+            } else {
+                println!("Successfully generated generic IS binary source: {}", output_bin_filename);
+                println!("To build and run (example):");
+                println!("  cargo build --release --bin is");
+                println!("  ./target/release/is S 4");
+            }
+        }
+        Err(e) => {
+            eprintln!("Error creating file {}: {}", output_bin_filename, e);
+        }
+    }
 }

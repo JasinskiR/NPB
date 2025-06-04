@@ -22,16 +22,34 @@ int main(int argc, char** argv) {
     int num_threads = npb::utils::get_num_threads();
     
     // Parse command line arguments if provided
+    if (argc > 1) {
+        // First argument is the problem class
+        problem_class = argv[1][0];
+        
+        // Second argument is the number of threads (if provided)
+        if (argc > 2) {
+            num_threads = std::atoi(argv[2]);
+            if (num_threads <= 0) {
+                std::cerr << "Invalid thread count: " << argv[2] << std::endl;
+                std::cerr << "Using default thread count instead." << std::endl;
+                num_threads = npb::utils::get_num_threads();
+            }
+        }
+    }
+    
+    // Also process options with flags for backward compatibility
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
             // Process options
             if (argv[i][1] == 't' && i + 1 < argc) {
                 num_threads = std::atoi(argv[i+1]);
+                if (num_threads <= 0) {
+                    std::cerr << "Invalid thread count: " << argv[i+1] << std::endl;
+                    std::cerr << "Using default thread count instead." << std::endl;
+                    num_threads = npb::utils::get_num_threads();
+                }
                 i++; // Skip the next argument as it's the thread count value
             }
-        } else {
-            // First non-option argument is the problem class
-            problem_class = argv[i][0];
         }
     }
     
