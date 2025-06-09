@@ -1,0 +1,1 @@
+/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/rust/producer_consumer_benchmark/target/release/producer_consumer_benchmark: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/rust/producer_consumer_benchmark/src/main.rs

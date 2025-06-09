@@ -1,0 +1,32 @@
+[package]
+name = "producer_consumer_benchmark"
+version = "0.1.0"
+edition = "2021"
+authors = ["Twoje Imię <email@example.com>"]
+description = "Model producent-konsument z analizą wydajności w Rust"
+license = "MIT"
+repository = "https://github.com/username/producer_consumer_benchmark"
+keywords = ["concurrency", "benchmark", "producer-consumer", "rust"]
+categories = ["concurrency", "development-tools::profiling"]
+
+[dependencies]
+crossbeam = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+tokio = { version = "1", features = ["full"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.bench]
+opt-level = 3
+debug = true
+
+[features]
+default = []
+detailed_metrics = []

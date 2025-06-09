@@ -1,0 +1,45 @@
+{
+  "total_runs": 288,
+  "successful_runs": 287,
+  "failed_runs": 1,
+  "configurations_tested": 96,
+  "languages_tested": [
+    "rust",
+    "cpp"
+  ],
+  "system_info": {
+    "architecture": "arm64",
+    "cpu_count": 8,
+    "cpu_freq_mhz": 3204,
+    "memory_gb": 16.0,
+    "os_name": "Darwin",
+    "os_version": "23.5.0",
+    "python_version": "3.13.4"
+  },
+  "performance_by_implementation": {
+    "rust_async": {
+      "runs": 96,
+      "avg_execution_time": 1.084158646563689,
+      "min_execution_time": 0.42902612686157227,
+      "max_execution_time": 6.267222166061401,
+      "avg_throughput_mbps": 69.4184375,
+      "max_throughput_mbps": 403.96
+    },
+    "cpp_threaded": {
+      "runs": 96,
+      "avg_execution_time": 0.37976719190677005,
+      "min_execution_time": 0.1643822193145752,
+      "max_execution_time": 1.1287291049957275,
+      "avg_throughput_mbps": 150.137935390625,
+      "max_throughput_mbps": 647.452
+    },
+    "cpp_async": {
+      "runs": 95,
+      "avg_execution_time": 0.4293157125774183,
+      "min_execution_time": 0.169097900390625,
+      "max_execution_time": 1.4895730018615723,
+      "avg_throughput_mbps": 120.69120466736842,
+      "max_throughput_mbps": 536.986
+    }
+  }
+}

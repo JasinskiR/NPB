@@ -1,0 +1,1 @@
+/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/rust/echo_benchmark/target/release/echo_benchmark: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/rust/echo_benchmark/src/main.rs

@@ -1,0 +1,1 @@
+/opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -O3 -DNDEBUG -mcpu=native -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/concurrency_benchmark.dir/main.cpp.o -o bin/benchmark  -framework CoreFoundation
