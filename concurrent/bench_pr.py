@@ -26,6 +26,9 @@ class BenchmarkConfig:
     """Configuration for benchmark test cases"""
     
     def __init__(self):
+        # Set max threads to 8
+        self.max_threads = 8
+        
         self.test_cases = [
             # Light load tests
             {"threads": 1, "items": 1000, "description": "Light load - 1 thread"},
@@ -39,7 +42,8 @@ class BenchmarkConfig:
             
             # Heavy load tests
             {"threads": 8, "items": 10000, "description": "Heavy load - 8 threads"},
-            {"threads": 12, "items": 10000, "description": "Heavy load - 12 threads"},
+            # Remove or cap the 12-thread test to respect max_threads
+            # {"threads": 12, "items": 10000, "description": "Heavy load - 12 threads"},
         ]
         
         self.modes = ["channel", "queue"]
@@ -561,6 +565,13 @@ Examples:
     # Configure tests
     config = BenchmarkConfig()
     config.repeat_count = args.repeats
+    
+    # Apply max threads constraint
+    max_threads = 8  # Hard-coded maximum
+    for test_case in config.test_cases[:]:
+        if test_case["threads"] > max_threads:
+            config.test_cases.remove(test_case)
+            print(f"⚠️ Removed test case using {test_case['threads']} threads (max: {max_threads})")
     
     try:
         print("🔧 NAPRAWIONY BENCHMARK RUNNER")
