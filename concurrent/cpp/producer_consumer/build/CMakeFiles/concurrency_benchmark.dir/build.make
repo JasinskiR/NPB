@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp
+CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build
+CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/concurrency_benchmark.dir/depend.make
@@ -73,18 +73,18 @@ CMakeFiles/concurrency_benchmark.dir/codegen:
 .PHONY : CMakeFiles/concurrency_benchmark.dir/codegen
 
 CMakeFiles/concurrency_benchmark.dir/main.cpp.o: CMakeFiles/concurrency_benchmark.dir/flags.make
-CMakeFiles/concurrency_benchmark.dir/main.cpp.o: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/main.cpp
+CMakeFiles/concurrency_benchmark.dir/main.cpp.o: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/main.cpp
 CMakeFiles/concurrency_benchmark.dir/main.cpp.o: CMakeFiles/concurrency_benchmark.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/concurrency_benchmark.dir/main.cpp.o"
-	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/concurrency_benchmark.dir/main.cpp.o -MF CMakeFiles/concurrency_benchmark.dir/main.cpp.o.d -o CMakeFiles/concurrency_benchmark.dir/main.cpp.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/concurrency_benchmark.dir/main.cpp.o"
+	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/concurrency_benchmark.dir/main.cpp.o -MF CMakeFiles/concurrency_benchmark.dir/main.cpp.o.d -o CMakeFiles/concurrency_benchmark.dir/main.cpp.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/main.cpp
 
 CMakeFiles/concurrency_benchmark.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/concurrency_benchmark.dir/main.cpp.i"
-	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/main.cpp > CMakeFiles/concurrency_benchmark.dir/main.cpp.i
+	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/main.cpp > CMakeFiles/concurrency_benchmark.dir/main.cpp.i
 
 CMakeFiles/concurrency_benchmark.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/concurrency_benchmark.dir/main.cpp.s"
-	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/main.cpp -o CMakeFiles/concurrency_benchmark.dir/main.cpp.s
+	/opt/homebrew/opt/llvm/bin/clang++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/main.cpp -o CMakeFiles/concurrency_benchmark.dir/main.cpp.s
 
 # Object files for target concurrency_benchmark
 concurrency_benchmark_OBJECTS = \
@@ -96,7 +96,7 @@ concurrency_benchmark_EXTERNAL_OBJECTS =
 bin/benchmark: CMakeFiles/concurrency_benchmark.dir/main.cpp.o
 bin/benchmark: CMakeFiles/concurrency_benchmark.dir/build.make
 bin/benchmark: CMakeFiles/concurrency_benchmark.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable bin/benchmark"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable bin/benchmark"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/concurrency_benchmark.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -108,6 +108,6 @@ CMakeFiles/concurrency_benchmark.dir/clean:
 .PHONY : CMakeFiles/concurrency_benchmark.dir/clean
 
 CMakeFiles/concurrency_benchmark.dir/depend:
-	cd /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/concurrency_benchmark.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/concurrency_benchmark.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/concurrency_benchmark.dir/depend
 

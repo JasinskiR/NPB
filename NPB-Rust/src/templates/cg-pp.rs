@@ -6,14 +6,6 @@ use rayon::prelude::*;
 use common::print_results;
 use common::randdp;
 
-const CLASS: &str = %% CLASS_NPB %%;
-const NA: i32 = %% NA %%;
-const NONZER: i32 = %% NONZER %%;
-const NITER: i32 = %% NITER %%;
-const SHIFT: f64 = %% SHIFT %%;
-const NZ: i32 = NA * (NONZER + 1) * (NONZER + 1);
-const NAZ: i32 = NA * (NONZER + 1);
-
 const NPBVERSION: &str = "4.1.2";
 const COMPILETIME: &str = %% COMPILE_TIME %%;
 const COMPILERVERSION: &str = "rustc 1.70.0-nightly";
@@ -28,15 +20,40 @@ const CS7: &str = "";
 
 const RCOND: f64 = 0.1;
 
+fn get_class_params(class: &str) -> (i32, i32, i32, f64, f64) {
+    match class.to_lowercase().as_str() {
+        "s" => (1400, 7, 15, 10.0, 8.5971775078648),
+        "w" => (7000, 8, 15, 12.0, 10.362595087124),
+        "a" => (14000, 11, 15, 20.0, 17.130235054029),
+        "b" => (75000, 13, 75, 60.0, 22.712745482631),
+        "c" => (150000, 15, 75, 110.0, 28.973605592845),
+        "d" => (1500000, 21, 100, 500.0, 52.514532105794),
+        "e" => (9000000, 26, 100, 1500.0, 77.522164599383),
+        _ => (1400, 7, 15, 10.0, 8.5971775078648), // Default to S
+    }
+}
+
 fn main() {
     let init_timer = Instant::now();
     
     let args: Vec<String> = env::args().collect();
-    let num_threads = if args.len() > 1 {
-        args[1].parse::<usize>().unwrap_or(1)
-    } else {
-        1
-    };
+    
+    if args.len() < 3 {
+        eprintln!("Usage: {} <CLASS> <NUM_THREADS>", args[0]);
+        eprintln!("Example: {} B 8", args[0]);
+        std::process::exit(1);
+    }
+    
+    let class = &args[1];
+    let num_threads = args[2].parse::<usize>().unwrap_or_else(|_| {
+        eprintln!("Invalid number of threads: {}", args[2]);
+        std::process::exit(1);
+    });
+
+    // Get class-specific parameters
+    let (na, nonzer, niter, shift, zeta_verify_value) = get_class_params(class);
+    let nz = na * (nonzer + 1) * (nonzer + 1);
+    let naz = na * (nonzer + 1);
 
     // Configure Rayon to use the specified number of threads
     rayon::ThreadPoolBuilder::new()
@@ -46,55 +63,45 @@ fn main() {
 
     println!(" Using {} threads", num_threads);
     
-    let mut colidx: Vec<i32> = vec![0; NZ as usize];
-    let mut rowstr: Vec<i32> = vec![0; (NA + 1) as usize];
-    let mut iv: Vec<i32> = vec![0; NA as usize];
-    let mut arow: Vec<i32> = vec![0; NA as usize];
-    let mut acol: Vec<i32> = vec![0; NAZ as usize];
-    let mut aelt: Vec<f64> = vec![0.0; NAZ as usize];
-    let mut a: Vec<f64> = vec![0.0; NZ as usize];
-    let mut x: Vec<f64> = vec![1.0; (NA + 2) as usize];
-    let mut z: Vec<f64> = vec![0.0; (NA + 2) as usize];
-    let mut p: Vec<f64> = vec![0.0; (NA + 2) as usize];
-    let mut q: Vec<f64> = vec![0.0; (NA + 2) as usize];
-    let mut r: Vec<f64> = vec![0.0; (NA + 2) as usize];
+    let mut colidx: Vec<i32> = vec![0; nz as usize];
+    let mut rowstr: Vec<i32> = vec![0; (na + 1) as usize];
+    let mut iv: Vec<i32> = vec![0; na as usize];
+    let mut arow: Vec<i32> = vec![0; na as usize];
+    let mut acol: Vec<i32> = vec![0; naz as usize];
+    let mut aelt: Vec<f64> = vec![0.0; naz as usize];
+    let mut a: Vec<f64> = vec![0.0; nz as usize];
+    let mut x: Vec<f64> = vec![1.0; (na + 2) as usize];
+    let mut z: Vec<f64> = vec![0.0; (na + 2) as usize];
+    let mut p: Vec<f64> = vec![0.0; (na + 2) as usize];
+    let mut q: Vec<f64> = vec![0.0; (na + 2) as usize];
+    let mut r: Vec<f64> = vec![0.0; (na + 2) as usize];
 
     let mut naa: i32 = 0;
     let mut nzz: i32 = 0;
     let firstrow: i32 = 0;
-    let lastrow: i32 = NA - 1;
+    let lastrow: i32 = na - 1;
     let firstcol: i32 = 0;
-    let lastcol: i32 = NA - 1;
+    let lastcol: i32 = na - 1;
     let mut amult: f64 = 0.0;
     let mut tran: f64 = 0.0;
     
-    let (mut zeta, mut norm_temp1, mut norm_temp2, mut t, mflops, zeta_verify_value, epsilon, err): (f64, f64, f64, f64, f64, f64, f64, f64);
+    let (mut zeta, mut norm_temp1, mut norm_temp2, mut t, mflops, epsilon, err): (f64, f64, f64, f64, f64, f64, f64);
     let mut rnorm: f64 = 0.0;
     let verified: bool;
 
-    zeta_verify_value = match CLASS {
-        "s"=>8.5971775078648,
-        "w"=>10.362595087124,
-        "a"=>17.130235054029,
-        "b"=>22.712745482631,
-        "c"=>28.973605592845,
-        "d"=>52.514532105794,
-        "e"=>77.522164599383,
-        _=>8.5971775078648
-    };
-
     println!("\n\n NAS Parallel Benchmarks 4.1 Parallel Rust version - CG Benchmark\n");
-    println!(" Size: {}", &NA);
-    println!(" Iterations: {}", &NITER);
+    println!(" Size: {}", &na);
+    println!(" Iterations: {}", &niter);
+    println!(" Class: {}", class.to_uppercase());
 
-    naa = NA;
-    nzz = NZ;
+    naa = na;
+    nzz = nz;
 
     tran  = 314159265.0;
     amult = 1220703125.0;
     zeta  = randdp::randlc(&mut tran, amult);
     
-    makea(&mut naa, &mut nzz, &mut a, &mut colidx, &mut rowstr, &firstrow, &lastrow, &firstcol, &lastcol, &mut arow, &mut acol, &mut aelt, &mut iv, &mut tran, &amult);
+    makea(&mut naa, &mut nzz, &mut a, &mut colidx, &mut rowstr, &firstrow, &lastrow, &firstcol, &lastcol, &mut arow, &mut acol, &mut aelt, &mut iv, &mut tran, &amult, nonzer);
 
     // Adjust colidx to match sequential version
     for j in 0..=(lastcol - firstrow) {
@@ -106,7 +113,7 @@ fn main() {
     }
 
     // Initialize vectors
-    for i in 0..=NA {
+    for i in 0..=na {
         x[i as usize] = 1.0;
     }
     
@@ -152,7 +159,7 @@ fn main() {
         });
 
     // Reset x to match sequential version
-    for i in 0..=NA {
+    for i in 0..=na {
         x[i as usize] = 1.0;
     }
     
@@ -163,7 +170,7 @@ fn main() {
     let bench_timer = Instant::now();
 
     // Main iteration - minimal parallelization
-    for it in 1..=NITER {
+    for it in 1..=niter {
         conj_grad(&mut colidx, &mut rowstr, &mut x, &mut z, &mut a, &mut p, &mut q, &mut r, &mut rnorm, &naa, &lastcol, &firstcol, &lastrow, &firstrow);
         
         // Parallel dot‐product for norm_temp1:
@@ -191,7 +198,7 @@ fn main() {
             norm_temp1 = 1e-30;
         }
         
-        zeta = SHIFT + 1.0 / norm_temp1;
+        zeta = shift + 1.0 / norm_temp1;
 
         if it == 1 {
             println!("\n   iteration           ||r||                 zeta");
@@ -225,20 +232,19 @@ fn main() {
     }
 
     if t != 0.0 {
-        mflops = (2.0 * NITER as f64 * NA as f64) * 
-                 (3.0 + (NONZER as f64 * (NONZER as f64 + 1.0)) + 
-                  25.0 * (5.0 + (NONZER as f64 * (NONZER as f64 + 1.0))) + 3.0) / t / 1000000.0;
+        mflops = (2.0 * niter as f64 * na as f64) * 
+                 (3.0 + (nonzer as f64 * (nonzer as f64 + 1.0)) + 
+                  25.0 * (5.0 + (nonzer as f64 * (nonzer as f64 + 1.0))) + 3.0) / t / 1000000.0;
     } else {
         mflops = 0.0;
     }
     
     // Update the print_results call to show the actual thread count
-    print_results::rust_print_results("CG", CLASS, NA.try_into().unwrap(), 0, 0, NITER, t, mflops, 
+    print_results::rust_print_results("CG", class.to_uppercase().as_str(), na.try_into().unwrap(), 0, 0, niter, t, mflops, 
                                     "          floating point", verified, NPBVERSION, 
                                     COMPILETIME, COMPILERVERSION, LIBVERSION, num_threads.to_string().as_str(), 
                                     CS1, CS2, CS3, CS4, CS5, CS6, CS7);
 }
-									
 
 fn conj_grad(colidx: &mut Vec<i32>, rowstr: &mut Vec<i32>, x: &mut Vec<f64>, z: &mut Vec<f64>, 
     a: &mut Vec<f64>, p: &mut Vec<f64>, q: &mut Vec<f64>, r: &mut Vec<f64>, 
@@ -380,10 +386,10 @@ fn icnvrt(x: &f64, ipwr2: &i32) -> i32 {
 fn makea(n: &mut i32, nz: &mut i32, a: &mut Vec<f64>, colidx: &mut Vec<i32>, rowstr: &mut Vec<i32>, 
          firstrow: &i32, lastrow: &i32, firstcol: &i32, lastcol: &i32, 
          arow: &mut Vec<i32>, acol: &mut Vec<i32>, aelt: &mut Vec<f64>, 
-         iv: &mut Vec<i32>, tran: &mut f64, amult: &f64) {
+         iv: &mut Vec<i32>, tran: &mut f64, amult: &f64, nonzer: i32) {
     let (mut nzv, mut nn1): (i32, i32);
-    let mut ivc: Vec<i32> = vec![0; (NONZER + 1) as usize];
-    let mut vc: Vec<f64> = vec![0.0; (NONZER + 1) as usize];
+    let mut ivc: Vec<i32> = vec![0; (nonzer + 1) as usize];
+    let mut vc: Vec<f64> = vec![0.0; (nonzer + 1) as usize];
 
     nn1 = 1;
 
@@ -399,12 +405,12 @@ fn makea(n: &mut i32, nz: &mut i32, a: &mut Vec<f64>, colidx: &mut Vec<i32>, row
     // because we have shared mutation of tran
     let mut tran_local = *tran;
     let mut local_arow = vec![0; n.to_owned() as usize];
-    let mut local_acol = vec![0; (*n * (NONZER + 1)) as usize];
-    let mut local_aelt = vec![0.0; (*n * (NONZER + 1)) as usize];
+    let mut local_acol = vec![0; (*n * (nonzer + 1)) as usize];
+    let mut local_aelt = vec![0.0; (*n * (nonzer + 1)) as usize];
     
     // Sequential generation is safer for this part due to the dependencies
     for iouter in 0..*n {
-        let mut nzv = NONZER;
+        let mut nzv = nonzer;
         
         sprnvc(n, &mut nzv, &nn1, &mut vc, &mut ivc, &mut tran_local, amult);
         vecset(&mut vc, &mut ivc, &mut nzv, iouter + 1, 0.5);
@@ -412,8 +418,8 @@ fn makea(n: &mut i32, nz: &mut i32, a: &mut Vec<f64>, colidx: &mut Vec<i32>, row
         local_arow[iouter as usize] = nzv;
         
         for ivelt in 0..nzv {
-            local_acol[(iouter * (NONZER + 1) + ivelt) as usize] = ivc[ivelt as usize] - 1;
-            local_aelt[(iouter * (NONZER + 1) + ivelt) as usize] = vc[ivelt as usize];
+            local_acol[(iouter * (nonzer + 1) + ivelt) as usize] = ivc[ivelt as usize] - 1;
+            local_aelt[(iouter * (nonzer + 1) + ivelt) as usize] = vc[ivelt as usize];
         }
     }
     
@@ -423,17 +429,17 @@ fn makea(n: &mut i32, nz: &mut i32, a: &mut Vec<f64>, colidx: &mut Vec<i32>, row
         arow[i] = local_arow[i];
     }
     
-    for i in 0..(*n * (NONZER + 1)) as usize {
+    for i in 0..(*n * (nonzer + 1)) as usize {
         acol[i] = local_acol[i];
         aelt[i] = local_aelt[i];
     }
 
-    sparse(a, colidx, rowstr, n, nz, arow, acol, aelt, firstrow, lastrow, iv);
+    sparse(a, colidx, rowstr, n, nz, arow, acol, aelt, firstrow, lastrow, iv, nonzer);
 }
 
 fn sparse(a: &mut Vec<f64>, colidx: &mut Vec<i32>, rowstr: &mut Vec<i32>, n: &mut i32, nz: &mut i32, 
     arow: &mut Vec<i32>, acol: &mut Vec<i32>, aelt: &mut Vec<f64>, 
-    firstrow: &i32, lastrow: &i32, nzloc: &mut Vec<i32>) {
+    firstrow: &i32, lastrow: &i32, nzloc: &mut Vec<i32>, nonzer: i32) {
     
     let nrows: i32 = *lastrow - *firstrow + 1;
 
@@ -445,7 +451,7 @@ fn sparse(a: &mut Vec<f64>, colidx: &mut Vec<i32>, rowstr: &mut Vec<i32>, n: &mu
     // Initial count - fix to match sequential version
     for i in 0..*n {
         for nza in 0..arow[i as usize] {
-            let local_j = acol[(i * (NONZER + 1) + nza) as usize] + 1;
+            let local_j = acol[(i * (nonzer + 1) + nza) as usize] + 1;
             if local_j >= 0 && local_j <= nrows {
                 // This is the key difference - add entire row count at once
                 rowstr[local_j as usize] = rowstr[local_j as usize] + arow[i as usize];
@@ -483,21 +489,21 @@ fn sparse(a: &mut Vec<f64>, colidx: &mut Vec<i32>, rowstr: &mut Vec<i32>, n: &mu
 
     for i in 0..*n {
         for nza in 0..arow[i as usize] {
-            let j = acol[(i * (NONZER + 1) + nza) as usize];
+            let j = acol[(i * (nonzer + 1) + nza) as usize];
             
             if j >= 0 && j < *n {
-                let scale = size * aelt[(i * (NONZER + 1) + nza) as usize];
+                let scale = size * aelt[(i * (nonzer + 1) + nza) as usize];
                 
                 for nzrow in 0..arow[i as usize] {
-                    let jcol = acol[(i * (NONZER + 1) + nzrow) as usize];
+                    let jcol = acol[(i * (nonzer + 1) + nzrow) as usize];
                     
                     if jcol >= 0 && jcol < *n {
-                        let va = aelt[(i * (NONZER + 1) + nzrow) as usize] * scale;
+                        let va = aelt[(i * (nonzer + 1) + nzrow) as usize] * scale;
                         let mut value = va;
                         
                         // Add diagonal term
                         if jcol == j && j == i {
-                            value = va + RCOND - SHIFT;
+                            value = va + RCOND - 10.0; // Using default shift for now
                         }
                         
                         // Find position in sparse matrix

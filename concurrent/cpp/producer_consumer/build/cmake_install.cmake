@@ -1,4 +1,4 @@
-# Install script for directory: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp
+# Install script for directory: /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -38,7 +38,7 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/bin/benchmark")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE FILES "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/bin/benchmark")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/benchmark" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/bin/benchmark")
     if(CMAKE_INSTALL_DO_STRIP)
@@ -50,7 +50,7 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/install_local_manifest.txt"
+  file(WRITE "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -66,6 +66,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

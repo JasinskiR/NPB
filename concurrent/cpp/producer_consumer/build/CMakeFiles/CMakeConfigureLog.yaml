@@ -28,7 +28,7 @@ events:
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
       
       The CXX compiler identification is Clang, found in:
-        /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/4.0.1/CompilerIdCXX/a.out
+        /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/4.0.1/CompilerIdCXX/a.out
       
   -
     kind: "try_compile-v1"
@@ -39,8 +39,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5"
-      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5"
+      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe"
+      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-scan-deps"
       CMAKE_CXX_FLAGS: ""
@@ -54,12 +54,12 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5'
+        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_12b8d/fast
-        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_12b8d.dir/build.make CMakeFiles/cmTC_12b8d.dir/build
-        Building CXX object CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o
-        /opt/homebrew/opt/llvm/bin/clang++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_cee65/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_cee65.dir/build.make CMakeFiles/cmTC_cee65.dir/build
+        Building CXX object CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++   -arch arm64   -v -Wl,-v -MD -MT CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         Homebrew clang version 20.1.6
         Target: arm64-apple-darwin23.5.0
         Thread model: posix
@@ -69,7 +69,7 @@ events:
         User configuration file directory: /Users/rafal/.config/clang
         clang++: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
          (in-process)
-         "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-20" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5 -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5 -resource-dir /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20 -dependency-file CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+         "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-20" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe -resource-dir /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20 -dependency-file CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
         clang -cc1 version 20.1.6 based upon LLVM 20.1.6 default target arm64-apple-darwin23.5.0
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include"
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/SubFrameworks"
@@ -81,8 +81,8 @@ events:
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks (framework directory)
         End of search list.
-        Linking CXX executable cmTC_12b8d
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_12b8d.dir/link.txt --verbose=1
+        Linking CXX executable cmTC_cee65
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cee65.dir/link.txt --verbose=1
         Homebrew clang version 20.1.6
         Target: arm64-apple-darwin23.5.0
         Thread model: posix
@@ -90,7 +90,7 @@ events:
         Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg
         System configuration file directory: /opt/homebrew/etc/clang
         User configuration file directory: /Users/rafal/.config/clang
-         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/20.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_12b8d -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a
+         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/20.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_cee65 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld PROJECT:ld-1053.12
         BUILD 15:45:29 Feb  3 2024
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
@@ -102,7 +102,7 @@ events:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift
         Framework search paths:
         	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks
-        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_12b8d
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -v -Wl,-v CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_cee65
         
       exitCode: 0
   -
@@ -144,12 +144,12 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|")?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)))("|,| |$)]
-        ignore line: [Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5']
+        ignore line: [Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe']
         ignore line: []
-        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_12b8d/fast]
-        ignore line: [/Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_12b8d.dir/build.make CMakeFiles/cmTC_12b8d.dir/build]
-        ignore line: [Building CXX object CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o]
-        ignore line: [/opt/homebrew/opt/llvm/bin/clang++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_cee65/fast]
+        ignore line: [/Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_cee65.dir/build.make CMakeFiles/cmTC_cee65.dir/build]
+        ignore line: [Building CXX object CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/opt/homebrew/opt/llvm/bin/clang++   -arch arm64   -v -Wl -v -MD -MT CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Homebrew clang version 20.1.6]
         ignore line: [Target: arm64-apple-darwin23.5.0]
         ignore line: [Thread model: posix]
@@ -159,7 +159,7 @@ events:
         ignore line: [User configuration file directory: /Users/rafal/.config/clang]
         ignore line: [clang++: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
         ignore line: [ (in-process)]
-        ignore line: [ "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-20" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5 -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-eieNG5 -resource-dir /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20 -dependency-file CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [ "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-20" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-KJIbbe -resource-dir /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20 -dependency-file CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [clang -cc1 version 20.1.6 based upon LLVM 20.1.6 default target arm64-apple-darwin23.5.0]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/SubFrameworks"]
@@ -171,8 +171,8 @@ events:
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/include]
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [Linking CXX executable cmTC_12b8d]
-        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_12b8d.dir/link.txt --verbose=1]
+        ignore line: [Linking CXX executable cmTC_cee65]
+        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cee65.dir/link.txt --verbose=1]
         ignore line: [Homebrew clang version 20.1.6]
         ignore line: [Target: arm64-apple-darwin23.5.0]
         ignore line: [Thread model: posix]
@@ -180,7 +180,7 @@ events:
         ignore line: [Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg]
         ignore line: [System configuration file directory: /opt/homebrew/etc/clang]
         ignore line: [User configuration file directory: /Users/rafal/.config/clang]
-        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/20.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_12b8d -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/20.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_cee65 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a]
           arg [/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -197,11 +197,11 @@ events:
           arg [-mllvm] ==> ignore
           arg [-enable-linkonceodr-outlining] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_12b8d] ==> ignore
+          arg [cmTC_cee65] ==> ignore
           arg [-search_paths_first] ==> ignore
           arg [-headerpad_max_install_names] ==> ignore
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_12b8d.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_cee65.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lc++] ==> lib [c++]
           arg [-lSystem] ==> lib [System]
           arg [/opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/20.1.6/lib/clang/20/lib/darwin/libclang_rt.osx.a]
@@ -245,8 +245,8 @@ events:
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-EXPD9T"
-      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-EXPD9T"
+      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-R7i5EM"
+      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-R7i5EM"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-scan-deps"
       CMAKE_CXX_FLAGS: " -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread"
@@ -259,15 +259,15 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-EXPD9T'
+        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-R7i5EM'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_bc097/fast
-        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_bc097.dir/build.make CMakeFiles/cmTC_bc097.dir/build
-        Building CXX object CMakeFiles/cmTC_bc097.dir/src.cxx.o
-        /opt/homebrew/opt/llvm/bin/clang++ -DCMAKE_HAVE_LIBC_PTHREAD  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread  -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_bc097.dir/src.cxx.o -MF CMakeFiles/cmTC_bc097.dir/src.cxx.o.d -o CMakeFiles/cmTC_bc097.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-EXPD9T/src.cxx
-        Linking CXX executable cmTC_bc097
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bc097.dir/link.txt --verbose=1
-        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_bc097.dir/src.cxx.o -o cmTC_bc097
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_e72ec/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_e72ec.dir/build.make CMakeFiles/cmTC_e72ec.dir/build
+        Building CXX object CMakeFiles/cmTC_e72ec.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DCMAKE_HAVE_LIBC_PTHREAD  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread  -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_e72ec.dir/src.cxx.o -MF CMakeFiles/cmTC_e72ec.dir/src.cxx.o.d -o CMakeFiles/cmTC_e72ec.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-R7i5EM/src.cxx
+        Linking CXX executable cmTC_e72ec
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e72ec.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_e72ec.dir/src.cxx.o -o cmTC_e72ec
         
       exitCode: 0
   -
@@ -279,8 +279,8 @@ events:
     checks:
       - "Performing Test HAS_JTHREAD"
     directories:
-      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-1toCt7"
-      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-1toCt7"
+      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-1IxyQx"
+      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-1IxyQx"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-scan-deps"
       CMAKE_CXX_FLAGS: " -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread"
@@ -293,18 +293,18 @@ events:
       variable: "HAS_JTHREAD"
       cached: true
       stdout: |
-        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-1toCt7'
+        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-1IxyQx'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_4d02f/fast
-        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_4d02f.dir/build.make CMakeFiles/cmTC_4d02f.dir/build
-        Building CXX object CMakeFiles/cmTC_4d02f.dir/src.cxx.o
-        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_JTHREAD  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_4d02f.dir/src.cxx.o -MF CMakeFiles/cmTC_4d02f.dir/src.cxx.o.d -o CMakeFiles/cmTC_4d02f.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-1toCt7/src.cxx
-        /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-1toCt7/src.cxx:3:10: fatal error: 'jthread' file not found
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_c5c7f/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_c5c7f.dir/build.make CMakeFiles/cmTC_c5c7f.dir/build
+        Building CXX object CMakeFiles/cmTC_c5c7f.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_JTHREAD  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_c5c7f.dir/src.cxx.o -MF CMakeFiles/cmTC_c5c7f.dir/src.cxx.o.d -o CMakeFiles/cmTC_c5c7f.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-1IxyQx/src.cxx
+        /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-1IxyQx/src.cxx:3:10: fatal error: 'jthread' file not found
             3 | #include <jthread>
               |          ^~~~~~~~~
         1 error generated.
-        make[1]: *** [CMakeFiles/cmTC_4d02f.dir/src.cxx.o] Error 1
-        make: *** [cmTC_4d02f/fast] Error 2
+        make[1]: *** [CMakeFiles/cmTC_c5c7f.dir/src.cxx.o] Error 1
+        make: *** [cmTC_c5c7f/fast] Error 2
         
       exitCode: 2
   -
@@ -316,8 +316,8 @@ events:
     checks:
       - "Performing Test HAS_LATCH"
     directories:
-      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-G1wZ56"
-      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-G1wZ56"
+      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-xTtMe5"
+      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-xTtMe5"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-scan-deps"
       CMAKE_CXX_FLAGS: " -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread"
@@ -330,15 +330,15 @@ events:
       variable: "HAS_LATCH"
       cached: true
       stdout: |
-        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-G1wZ56'
+        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-xTtMe5'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a89e0/fast
-        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_a89e0.dir/build.make CMakeFiles/cmTC_a89e0.dir/build
-        Building CXX object CMakeFiles/cmTC_a89e0.dir/src.cxx.o
-        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_LATCH  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_a89e0.dir/src.cxx.o -MF CMakeFiles/cmTC_a89e0.dir/src.cxx.o.d -o CMakeFiles/cmTC_a89e0.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-G1wZ56/src.cxx
-        Linking CXX executable cmTC_a89e0
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a89e0.dir/link.txt --verbose=1
-        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_a89e0.dir/src.cxx.o -o cmTC_a89e0
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_ee4bb/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_ee4bb.dir/build.make CMakeFiles/cmTC_ee4bb.dir/build
+        Building CXX object CMakeFiles/cmTC_ee4bb.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_LATCH  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_ee4bb.dir/src.cxx.o -MF CMakeFiles/cmTC_ee4bb.dir/src.cxx.o.d -o CMakeFiles/cmTC_ee4bb.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-xTtMe5/src.cxx
+        Linking CXX executable cmTC_ee4bb
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ee4bb.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_ee4bb.dir/src.cxx.o -o cmTC_ee4bb
         
       exitCode: 0
   -
@@ -350,8 +350,8 @@ events:
     checks:
       - "Performing Test HAS_BARRIER"
     directories:
-      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-9uYis3"
-      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-9uYis3"
+      source: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-yIaVp7"
+      binary: "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-yIaVp7"
     cmakeVariables:
       CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/20.1.6/bin/clang-scan-deps"
       CMAKE_CXX_FLAGS: " -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread"
@@ -364,15 +364,15 @@ events:
       variable: "HAS_BARRIER"
       cached: true
       stdout: |
-        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-9uYis3'
+        Change Dir: '/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-yIaVp7'
         
-        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_16c87/fast
-        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_16c87.dir/build.make CMakeFiles/cmTC_16c87.dir/build
-        Building CXX object CMakeFiles/cmTC_16c87.dir/src.cxx.o
-        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_BARRIER  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_16c87.dir/src.cxx.o -MF CMakeFiles/cmTC_16c87.dir/src.cxx.o.d -o CMakeFiles/cmTC_16c87.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/CMakeScratch/TryCompile-9uYis3/src.cxx
-        Linking CXX executable cmTC_16c87
-        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_16c87.dir/link.txt --verbose=1
-        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_16c87.dir/src.cxx.o -o cmTC_16c87
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_cbee3/fast
+        /Library/Developer/CommandLineTools/usr/bin/make  -f CMakeFiles/cmTC_cbee3.dir/build.make CMakeFiles/cmTC_cbee3.dir/build
+        Building CXX object CMakeFiles/cmTC_cbee3.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_BARRIER  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -std=c++20 -arch arm64 -MD -MT CMakeFiles/cmTC_cbee3.dir/src.cxx.o -MF CMakeFiles/cmTC_cbee3.dir/src.cxx.o.d -o CMakeFiles/cmTC_cbee3.dir/src.cxx.o -c /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/CMakeScratch/TryCompile-yIaVp7/src.cxx
+        Linking CXX executable cmTC_cbee3
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cbee3.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -Wall -Wextra -Wpedantic -Wno-unused-parameter -stdlib=libc++ -pthread -std=c++20 -stdlib=libc++ -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/cmTC_cbee3.dir/src.cxx.o -o cmTC_cbee3
         
       exitCode: 0
 ...

@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp
+CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build
+CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build
 
 # Utility rule file for run_benchmark_profile.
 
@@ -67,8 +67,8 @@ include CMakeFiles/run_benchmark_profile.dir/compiler_depend.make
 include CMakeFiles/run_benchmark_profile.dir/progress.make
 
 CMakeFiles/run_benchmark_profile: bin/benchmark
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Running benchmark with Instruments profiling"
-	xcrun xctrace record --template 'Time Profiler' --launch -- /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/bin/benchmark 8 5000
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Running benchmark with Instruments profiling"
+	xcrun xctrace record --template 'Time Profiler' --launch -- /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/bin/benchmark 8 5000
 
 CMakeFiles/run_benchmark_profile.dir/codegen:
 .PHONY : CMakeFiles/run_benchmark_profile.dir/codegen
@@ -86,6 +86,6 @@ CMakeFiles/run_benchmark_profile.dir/clean:
 .PHONY : CMakeFiles/run_benchmark_profile.dir/clean
 
 CMakeFiles/run_benchmark_profile.dir/depend:
-	cd /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles/run_benchmark_profile.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles/run_benchmark_profile.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/run_benchmark_profile.dir/depend
 

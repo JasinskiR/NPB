@@ -54,10 +54,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp
+CMAKE_SOURCE_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build
+CMAKE_BINARY_DIR = /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -88,14 +88,14 @@ clean: CMakeFiles/run_benchmark_profile.dir/clean
 CMakeFiles/concurrency_benchmark.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/concurrency_benchmark.dir/build.make CMakeFiles/concurrency_benchmark.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/concurrency_benchmark.dir/build.make CMakeFiles/concurrency_benchmark.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=1,2 "Built target concurrency_benchmark"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=1,2 "Built target concurrency_benchmark"
 .PHONY : CMakeFiles/concurrency_benchmark.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/concurrency_benchmark.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/concurrency_benchmark.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 0
 .PHONY : CMakeFiles/concurrency_benchmark.dir/rule
 
 # Convenience name for target.
@@ -105,7 +105,7 @@ concurrency_benchmark: CMakeFiles/concurrency_benchmark.dir/rule
 # codegen rule for target.
 CMakeFiles/concurrency_benchmark.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/concurrency_benchmark.dir/build.make CMakeFiles/concurrency_benchmark.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=1,2 "Finished codegen for target concurrency_benchmark"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=1,2 "Finished codegen for target concurrency_benchmark"
 .PHONY : CMakeFiles/concurrency_benchmark.dir/codegen
 
 # clean rule for target.
@@ -120,14 +120,14 @@ CMakeFiles/concurrency_benchmark.dir/clean:
 CMakeFiles/run_benchmark.dir/all: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark.dir/build.make CMakeFiles/run_benchmark.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark.dir/build.make CMakeFiles/run_benchmark.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=3 "Built target run_benchmark"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=3 "Built target run_benchmark"
 .PHONY : CMakeFiles/run_benchmark.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/run_benchmark.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/run_benchmark.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 0
 .PHONY : CMakeFiles/run_benchmark.dir/rule
 
 # Convenience name for target.
@@ -137,7 +137,7 @@ run_benchmark: CMakeFiles/run_benchmark.dir/rule
 # codegen rule for target.
 CMakeFiles/run_benchmark.dir/codegen: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark.dir/build.make CMakeFiles/run_benchmark.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=3 "Finished codegen for target run_benchmark"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=3 "Finished codegen for target run_benchmark"
 .PHONY : CMakeFiles/run_benchmark.dir/codegen
 
 # clean rule for target.
@@ -152,14 +152,14 @@ CMakeFiles/run_benchmark.dir/clean:
 CMakeFiles/run_benchmark_stress.dir/all: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_stress.dir/build.make CMakeFiles/run_benchmark_stress.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_stress.dir/build.make CMakeFiles/run_benchmark_stress.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=5 "Built target run_benchmark_stress"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=5 "Built target run_benchmark_stress"
 .PHONY : CMakeFiles/run_benchmark_stress.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/run_benchmark_stress.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/run_benchmark_stress.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 0
 .PHONY : CMakeFiles/run_benchmark_stress.dir/rule
 
 # Convenience name for target.
@@ -169,7 +169,7 @@ run_benchmark_stress: CMakeFiles/run_benchmark_stress.dir/rule
 # codegen rule for target.
 CMakeFiles/run_benchmark_stress.dir/codegen: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_stress.dir/build.make CMakeFiles/run_benchmark_stress.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=5 "Finished codegen for target run_benchmark_stress"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=5 "Finished codegen for target run_benchmark_stress"
 .PHONY : CMakeFiles/run_benchmark_stress.dir/codegen
 
 # clean rule for target.
@@ -184,14 +184,14 @@ CMakeFiles/run_benchmark_stress.dir/clean:
 CMakeFiles/run_benchmark_profile.dir/all: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_profile.dir/build.make CMakeFiles/run_benchmark_profile.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_profile.dir/build.make CMakeFiles/run_benchmark_profile.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=4 "Built target run_benchmark_profile"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=4 "Built target run_benchmark_profile"
 .PHONY : CMakeFiles/run_benchmark_profile.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/run_benchmark_profile.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/run_benchmark_profile.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles 0
 .PHONY : CMakeFiles/run_benchmark_profile.dir/rule
 
 # Convenience name for target.
@@ -201,7 +201,7 @@ run_benchmark_profile: CMakeFiles/run_benchmark_profile.dir/rule
 # codegen rule for target.
 CMakeFiles/run_benchmark_profile.dir/codegen: CMakeFiles/concurrency_benchmark.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_benchmark_profile.dir/build.make CMakeFiles/run_benchmark_profile.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/build/CMakeFiles --progress-num=4 "Finished codegen for target run_benchmark_profile"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/build/CMakeFiles --progress-num=4 "Finished codegen for target run_benchmark_profile"
 .PHONY : CMakeFiles/run_benchmark_profile.dir/codegen
 
 # clean rule for target.

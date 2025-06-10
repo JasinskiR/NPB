@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/main.cpp" "CMakeFiles/concurrency_benchmark.dir/main.cpp.o" "gcc" "CMakeFiles/concurrency_benchmark.dir/main.cpp.o.d"
+  "/Users/rafal/Desktop/All/Studia/master/3_term/Master_thesis/MasterT_Parallel/NPB/concurrent/cpp/producer_consumer/main.cpp" "CMakeFiles/concurrency_benchmark.dir/main.cpp.o" "gcc" "CMakeFiles/concurrency_benchmark.dir/main.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
